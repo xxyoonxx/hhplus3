@@ -9,7 +9,8 @@
 
 [대기열 API]
 - 토큰 발급: 유저의 UUID, 대기순서, 잔여시간을 포함한 토큰 발급
-- 대기열 검증: 대기열에 토큰 검증 - API요청 시(혹은 폴링 방식으로)
+- 대기열 검증: 유효한 대기열인지 검증
+- 대기번호 조회: 현재 대기순서를 조회
 - 대기열 만료: 좌석 배정 완료, 전 좌석 매진, 임시 배정 시간 초과 시 토큰을 만료시킴
 
 [콘서트 좌석 조회 API]
@@ -40,6 +41,8 @@
 ![seatApi.png](assets%2Fsequence%2FseatApi.png)
 
 ![reservationApi.png](assets%2Fsequence%2FreservationApi.png)
+
+![balance.png](assets%2Fsequence%2Fbalance.png)
 
 ![chargeApi.png](assets%2Fsequence%2FchargeApi.png)
 
@@ -72,6 +75,10 @@
 
 ![queue.png](assets%2Fmockapi%2Fqueue.png)
 
+- /queue/status GET 대기열 확인
+
+![queueStatus.PNG](assets%2Fmockapi%2FqueueStatus.PNG)
+
 - /concerts [GET 콘서트 목록 조회](https://4d27ed9a-e6d8-40be-beb9-c3124be0a8ff.mock.pstmn.io/concerts)
 
 - /concerts/{concertId}/dates [GET 예약 가능 날짜 조회](https://4d27ed9a-e6d8-40be-beb9-c3124be0a8ff.mock.pstmn.io/concerts/1/dates)
@@ -82,9 +89,9 @@
 
 ![reservation.png](assets%2Fmockapi%2Freservation.png)
 
-- /user/{userId}/balance [GET 잔액 조회](https://4d27ed9a-e6d8-40be-beb9-c3124be0a8ff.mock.pstmn.io/user/1/balance)
+- /payment/{userId}/balance [GET 잔액 조회](https://4d27ed9a-e6d8-40be-beb9-c3124be0a8ff.mock.pstmn.io/user/1/balance)
 
-- /user/{userId}/charge PATCH 잔액 충전
+- /payment/{userId}/charge PATCH 잔액 충전
 
 ![charge.PNG](assets%2Fmockapi%2Fcharge.PNG)
 
