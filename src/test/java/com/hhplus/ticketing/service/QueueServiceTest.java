@@ -40,9 +40,9 @@ public class QueueServiceTest {
                 .build();
         when(queueRepository.getTokenInfo(token)).thenReturn(Optional.of(queue));
 
-        Optional<QueueResponseDto> result = queueService.getQueueStatus(token);
+        QueueResponseDto result = queueService.getQueueStatus(token);
 
-        assertEquals(queue.getToken(), result.orElseThrow().getToken());
+        assertEquals(queue.getToken(), result.getToken());
         verify(queueRepository, times(1)).getTokenInfo(token);
     }
 
@@ -60,7 +60,7 @@ public class QueueServiceTest {
 
     @Test
     @DisplayName("만료 토큰 처리")
-    void ExpireToken() {
+    void expireToken() {
         String expiredToken = "expired-token";
         Queue expiredQueue = Queue.builder()
                 .userId(789L)
@@ -70,11 +70,12 @@ public class QueueServiceTest {
                 .build();
         when(queueRepository.getTokenInfo(expiredToken)).thenReturn(Optional.of(expiredQueue));
 
-        Optional<QueueResponseDto> result = queueService.getQueueStatus(expiredToken);
-
-        assertTrue(result.isEmpty());
+        QueueResponseDto result = queueService.getQueueStatus(expiredToken);
+        assertNotNull(result); // QueueResponseDto가 null이 아닌지 확인
+        assertEquals(Queue.Status.EXPIRED, result.getStatus()); // 만료 상태인지 확인
 
         verify(queueRepository, times(1)).getTokenInfo(expiredToken);
+        verify(queueRepository, times(1)).save(expiredQueue); // 만료된 토큰이 저장되었는지 확인
     }
 
     @Test

@@ -16,6 +16,7 @@ public class QueueResponseDto {
     private String token;
     private int queuePosition;
     private int remainingTime;
+    private Queue.Status status;
 
     public static QueueResponseDto from(Queue queue, int queuePosition){
         int remainingTime = (int) Duration.between(LocalDateTime.now(), queue.getExpiryDate()).getSeconds();
@@ -24,6 +25,7 @@ public class QueueResponseDto {
                 .token(queue.getToken())
                 .queuePosition(queuePosition)
                 .remainingTime(remainingTime)
+                .status(queue.getStatus())
                 .build();
     }
 
