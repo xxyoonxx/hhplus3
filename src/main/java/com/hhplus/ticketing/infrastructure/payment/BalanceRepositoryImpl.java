@@ -13,7 +13,7 @@ public class BalanceRepositoryImpl implements BalanceRepository {
 
     @Override
     public Balance getBalance(Long userId) {
-        return balanceJpaRepository.getById(userId);
+        return balanceJpaRepository.getByUserId(userId);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.hhplus.ticketing.presentation.payment.dto;
 
+import com.hhplus.ticketing.domain.payment.entity.Payment;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,11 +10,12 @@ import lombok.Data;
 @Data
 public class PaymentResponseDto {
 
-    private String status;
+    private Payment.Status status;
 
-    // 작성 에정
-    private static PaymentResponseDto from(){
-        return PaymentResponseDto.builder().build();
+    public static PaymentResponseDto from(Payment payment){
+        return PaymentResponseDto.builder()
+                .status(payment.getStatus())
+                .build();
     }
 
 }

@@ -38,4 +38,9 @@ public class Balance {
         return this;
     }
 
+    public Balance useBalance(int useAmount) {
+        this.balance -= useAmount;
+        return this;
+    }
+
 }
