@@ -17,4 +17,11 @@ public class ConcertDetailRepositoryImpl implements ConcertDetailRepository {
     public List<ConcertDetail> getConcertDetailInfo(long concertId) {
         return concertDetailJpaRepository.findByConcertConcertId(concertId);
     }
+
+    @Override
+    public ConcertDetail getConcertInfoByDetailId(long concertDetailId) {
+        return concertDetailJpaRepository.findConcertByDetailId(concertDetailId);
+    }
+
+
 }

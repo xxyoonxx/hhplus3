@@ -15,7 +15,17 @@ public class ConcertSeatRepositoryImpl implements ConcertSeatRepository {
 
     @Override
     public List<ConcertSeat> getConcertSeatsInfo(long concertDetailId) {
-        return concertSeatJpaRepository.findByConcertDetailId(concertDetailId);
+        return concertSeatJpaRepository.findByConcertDetailDetailId(concertDetailId);
+    }
+
+    @Override
+    public ConcertSeat getConcertSeatInfo(long seatId) {
+        return concertSeatJpaRepository.findById(seatId).get();
+    }
+
+    @Override
+    public ConcertSeat saveConcertSeat(ConcertSeat concertSeat) {
+        return concertSeatJpaRepository.save(concertSeat);
     }
 
 }

@@ -18,5 +18,10 @@ public class ConcertRepositoryImpl implements ConcertRepository {
         return concertJpaRepository.findAll();
     }
 
+    @Override
+    public Concert getConcertInfo(long concertId) {
+        return concertJpaRepository.getByConcertId(concertId);
+    }
+
 
 }

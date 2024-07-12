@@ -6,7 +6,9 @@ import com.hhplus.ticketing.domain.concert.entity.ConcertSeat;
 import com.hhplus.ticketing.domain.concert.repository.ConcertDetailRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertSeatRepository;
-import com.hhplus.ticketing.domain.concert.service.ConcertService;
+import com.hhplus.ticketing.application.concert.service.ConcertService;
+import com.hhplus.ticketing.domain.queue.entity.Queue;
+import com.hhplus.ticketing.domain.queue.repository.QueueRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -33,6 +36,9 @@ public class ConcertServiceTest {
     @Mock
     private ConcertDetailRepository concertDetailRepository;
 
+    @Mock
+    private QueueRepository queueRepository;
+
     @InjectMocks
     private ConcertService concertService;
 
@@ -40,6 +46,8 @@ public class ConcertServiceTest {
     private ConcertSeat seat02;
     private ConcertDetail concertDetail;
     private Concert concert;
+    private Queue queue;
+    String token;
 
     @BeforeEach
     void setUp() {
@@ -64,14 +72,22 @@ public class ConcertServiceTest {
                 .title("콘서트01")
                 .consertDetail(List.of(concertDetail))
                 .build();
+        String token = "test-token";
+        queue = Queue.builder()
+                .userId(123L)
+                .token(token)
+                .status(Queue.Status.WAITING)
+                .expiryDate(LocalDateTime.now().plusMinutes(30))
+                .build();
     }
 
     @Test
     @DisplayName("콘서트 목록 조회")
     void getConcerts() {
         when(concertRepository.getAllConcerts()).thenReturn(List.of(concert));
+        when(queueRepository.getUserIdByToken(token)).thenReturn(Optional.ofNullable(queue));
 
-        List<Concert> concertList = concertService.getAllConcerts();
+        List<Concert> concertList = concertService.getAllConcerts(token);
 
         assertThat(concertList).hasSize(1);
         assertThat(concertList.get(0).getTitle()).isEqualTo("콘서트01");
@@ -84,8 +100,9 @@ public class ConcertServiceTest {
         Long concertId = concert.getConcertId();
 
         when(concertDetailRepository.getConcertDetailInfo(concertId)).thenReturn(List.of(concertDetail));
+        when(queueRepository.getUserIdByToken(token)).thenReturn(Optional.ofNullable(queue));
 
-        List<ConcertDetail> details = concertService.getConcertDetails(concertId);
+        List<ConcertDetail> details = concertService.getConcertDetails(token, concertId);
 
         assertThat(details).hasSize(1);
         assertThat(details.get(0).getConcertDate()).isEqualTo(concertDetail.getConcertDate());
@@ -98,8 +115,9 @@ public class ConcertServiceTest {
         Long detailId = concertDetail.getDetailId();
 
         when(concertSeatRepository.getConcertSeatsInfo(detailId)).thenReturn(List.of(seat01, seat02));
+        when(queueRepository.getUserIdByToken(token)).thenReturn(Optional.ofNullable(queue));
 
-        List<ConcertSeat> seats = concertService.getConcertSeats(detailId);
+        List<ConcertSeat> seats = concertService.getConcertSeats(token, detailId);
 
         assertThat(seats).hasSize(2);
         assertThat(seats.get(0).getSeatNo()).isEqualTo("A01");

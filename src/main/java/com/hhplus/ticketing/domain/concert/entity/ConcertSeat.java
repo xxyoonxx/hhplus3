@@ -33,12 +33,11 @@ public class ConcertSeat {
     }
 
     @Builder
-    public ConcertSeat(long seatId, String seatNo, Status status, int seatPrice, ConcertDetail concertDetail) {
+    public ConcertSeat(long seatId, ConcertDetail concertDetail, String seatNo, Status status, int seatPrice) {
         this.seatId = seatId;
+        this.concertDetail = concertDetail;
         this.seatNo = seatNo;
         this.status = status;
         this.seatPrice = seatPrice;
-        this.concertDetail = concertDetail;
     }
-
 }

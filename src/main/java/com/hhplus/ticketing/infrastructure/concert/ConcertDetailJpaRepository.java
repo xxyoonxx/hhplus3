@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ConcertDetailJpaRepository extends JpaRepository<ConcertDetail, Long> {
     List<ConcertDetail> findByConcertConcertId(Long concertId);
+    ConcertDetail findConcertByDetailId(Long detailId);
 }
