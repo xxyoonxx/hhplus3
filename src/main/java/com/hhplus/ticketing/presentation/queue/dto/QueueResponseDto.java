@@ -1,8 +1,12 @@
 package com.hhplus.ticketing.presentation.queue.dto;
 
+import com.hhplus.ticketing.domain.queue.entity.Queue;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @Builder
@@ -11,11 +15,16 @@ public class QueueResponseDto {
 
     private String token;
     private int queuePosition;
-    private int remainingtime;
+    private int remainingTime;
 
-    // 작성 에정
-    public static QueueResponseDto from(){
-        return QueueResponseDto.builder().build();
+    public static QueueResponseDto from(Queue queue, int queuePosition){
+        int remainingTime = (int) Duration.between(LocalDateTime.now(), queue.getExpiryDate()).getSeconds();
+
+        return QueueResponseDto.builder()
+                .token(queue.getToken())
+                .queuePosition(queuePosition)
+                .remainingTime(remainingTime)
+                .build();
     }
 
 }
