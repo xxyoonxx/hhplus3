@@ -7,8 +7,8 @@ import com.hhplus.ticketing.domain.concert.repository.ConcertDetailRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertSeatRepository;
 import com.hhplus.ticketing.application.concert.service.ConcertService;
-import com.hhplus.ticketing.domain.queue.entity.Queue;
-import com.hhplus.ticketing.domain.queue.repository.QueueRepository;
+import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
+import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ public class ConcertServiceTest {
     private ConcertDetailRepository concertDetailRepository;
 
     @Mock
-    private QueueRepository queueRepository;
+    private UserQueueRepository userQueueRepository;
 
     @InjectMocks
     private ConcertService concertService;
@@ -46,7 +46,7 @@ public class ConcertServiceTest {
     private ConcertSeat seat02;
     private ConcertDetail concertDetail;
     private Concert concert;
-    private Queue queue;
+    private UserQueue userQueue;
     String token;
 
     @BeforeEach
@@ -73,10 +73,10 @@ public class ConcertServiceTest {
                 .consertDetail(List.of(concertDetail))
                 .build();
         String token = "test-token";
-        queue = Queue.builder()
+        userQueue = UserQueue.builder()
                 .userId(123L)
                 .token(token)
-                .status(Queue.Status.WAITING)
+                .status(UserQueue.Status.WAITING)
                 .expiryDate(LocalDateTime.now().plusMinutes(30))
                 .build();
     }
@@ -85,7 +85,7 @@ public class ConcertServiceTest {
     @DisplayName("콘서트 목록 조회")
     void getConcerts() {
         when(concertRepository.getAllConcerts()).thenReturn(List.of(concert));
-        when(queueRepository.getUserIdByToken(token)).thenReturn(Optional.ofNullable(queue));
+        when(userQueueRepository.getUserIdByToken(token)).thenReturn(Optional.ofNullable(userQueue));
 
         List<Concert> concertList = concertService.getAllConcerts(token);
 
@@ -100,7 +100,7 @@ public class ConcertServiceTest {
         Long concertId = concert.getConcertId();
 
         when(concertDetailRepository.getConcertDetailInfo(concertId)).thenReturn(List.of(concertDetail));
-        when(queueRepository.getUserIdByToken(token)).thenReturn(Optional.ofNullable(queue));
+        when(userQueueRepository.getUserIdByToken(token)).thenReturn(Optional.ofNullable(userQueue));
 
         List<ConcertDetail> details = concertService.getConcertDetails(token, concertId);
 
@@ -115,7 +115,7 @@ public class ConcertServiceTest {
         Long detailId = concertDetail.getDetailId();
 
         when(concertSeatRepository.getConcertSeatsInfo(detailId)).thenReturn(List.of(seat01, seat02));
-        when(queueRepository.getUserIdByToken(token)).thenReturn(Optional.ofNullable(queue));
+        when(userQueueRepository.getUserIdByToken(token)).thenReturn(Optional.ofNullable(userQueue));
 
         List<ConcertSeat> seats = concertService.getConcertSeats(token, detailId);
 

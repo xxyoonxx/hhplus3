@@ -1,11 +1,10 @@
 package com.hhplus.ticketing.presentation.queue;
 
-import com.hhplus.ticketing.application.queue.service.QueueService;
-import com.hhplus.ticketing.presentation.queue.dto.QueueRequestDto;
-import com.hhplus.ticketing.presentation.queue.dto.QueueResponseDto;
+import com.hhplus.ticketing.application.userQueue.service.UserQueueService;
+import com.hhplus.ticketing.presentation.queue.dto.UserQueueRequestDto;
+import com.hhplus.ticketing.presentation.queue.dto.UserQueueResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +13,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/queue")
 @RequiredArgsConstructor
-public class QueueController {
+public class UserQueueController {
 
-    private final QueueService queueService;
+    private final UserQueueService userQueueService;
 
     /**
      * 대기열 진입
@@ -25,8 +24,8 @@ public class QueueController {
      */
     @Operation(summary = "대기열 요청")
     @PostMapping("/")
-    public ResponseEntity<QueueResponseDto> requestQueue(@RequestBody QueueRequestDto requestDto) {
-        QueueResponseDto enterQueue = queueService.enterQueue(requestDto.getUserId());
+    public ResponseEntity<UserQueueResponseDto> requestQueue(@RequestBody UserQueueRequestDto requestDto) {
+        UserQueueResponseDto enterQueue = userQueueService.enterQueue(requestDto.getUserId());
         return ResponseEntity.ok(enterQueue);
     }
 
@@ -37,8 +36,8 @@ public class QueueController {
      */
     @Operation(summary = "대기열 조회")
     @GetMapping("/status")
-    public ResponseEntity<QueueResponseDto> queueStatus(@RequestHeader("Authorization") String authorization) {
-        QueueResponseDto queueStatus = queueService.getQueueStatus(authorization);
+    public ResponseEntity<UserQueueResponseDto> queueStatus(@RequestHeader("Authorization") String authorization) {
+        UserQueueResponseDto queueStatus = userQueueService.getQueueStatus(authorization);
         return ResponseEntity.ok(queueStatus);
     }
 

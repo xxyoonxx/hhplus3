@@ -8,9 +8,9 @@ import com.hhplus.ticketing.domain.payment.entity.Payment;
 import com.hhplus.ticketing.domain.payment.repository.BalanceHistoryRepository;
 import com.hhplus.ticketing.domain.payment.repository.BalanceRepository;
 import com.hhplus.ticketing.domain.payment.repository.PaymentRepository;
-import com.hhplus.ticketing.domain.queue.QueueErrorCode;
-import com.hhplus.ticketing.domain.queue.entity.Queue;
-import com.hhplus.ticketing.domain.queue.repository.QueueRepository;
+import com.hhplus.ticketing.domain.userQueue.UserQueueErrorCode;
+import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
+import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
 import com.hhplus.ticketing.domain.reservation.ReservationErrorCode;
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
 import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
@@ -29,7 +29,7 @@ public class PaymentService {
     private final BalanceHistoryRepository balanceHistoryRepository;
     private final PaymentRepository paymentRepository;
 
-    private final QueueRepository queueRepository;
+    private final UserQueueRepository userQueueRepository;
     private final ReservationRepository reservationRepository;
 
     /**
@@ -40,9 +40,9 @@ public class PaymentService {
      */
     public Payment createPayment(String authorization, PaymentRequestDto paymentRequestDto) {
         // 토큰 검증
-        Queue queue = queueRepository.getUserIdByToken(authorization).orElseThrow(() -> new CustomException(QueueErrorCode.USER_NOT_FOUND));
-        if (queue.getStatus() == Queue.Status.EXPIRED) throw new CustomException(QueueErrorCode.TOKEN_EXPIRED);
-        long userId = queue.getUserId();
+        UserQueue userQueue = userQueueRepository.getUserIdByToken(authorization).orElseThrow(() -> new CustomException(UserQueueErrorCode.USER_NOT_FOUND));
+        if (userQueue.getStatus() == UserQueue.Status.EXPIRED) throw new CustomException(UserQueueErrorCode.TOKEN_EXPIRED);
+        long userId = userQueue.getUserId();
 
         // 예약 정보 확인
         Reservation reservation = reservationRepository.getReservationInfo(paymentRequestDto.getReservationId())

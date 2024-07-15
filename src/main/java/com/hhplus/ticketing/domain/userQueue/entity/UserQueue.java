@@ -1,4 +1,4 @@
-package com.hhplus.ticketing.domain.queue.entity;
+package com.hhplus.ticketing.domain.userQueue.entity;
 
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -11,11 +11,11 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @Table(name="user_queue")
-public class Queue {
+public class UserQueue {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long tokenId;
+    private long queueId;
 
     private long userId;
 
@@ -32,8 +32,8 @@ public class Queue {
     }
 
     @Builder
-    public Queue(long tokenId, long userId, String token, Status status, LocalDateTime createdDate, LocalDateTime expiryDate) {
-        this.tokenId = tokenId;
+    public UserQueue(long queueId, long userId, String token, Status status, LocalDateTime createdDate, LocalDateTime expiryDate) {
+        this.queueId = queueId;
         this.userId = userId;
         this.token = token;
         this.status = status;
