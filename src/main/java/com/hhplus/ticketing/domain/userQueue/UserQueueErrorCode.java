@@ -7,7 +7,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum UserQueueErrorCode implements ErrorCode {
 
-    USER_NOT_FOUND("회원 정보를 찾을 수 없습니다.", HttpStatus.UNAUTHORIZED),
+    QUEUE_NOT_FOUND("대기 상태가 아닙니다.", HttpStatus.UNAUTHORIZED),
+    NOT_IN_QUEUE("입장 순번이 아닙니다.", HttpStatus.ACCEPTED),
     TOKEN_EXPIRED("대기 시간이 만료되었습니다.", HttpStatus.BAD_REQUEST);
 
     private final String message;
