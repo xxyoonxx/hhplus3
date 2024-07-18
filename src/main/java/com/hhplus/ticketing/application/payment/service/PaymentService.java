@@ -1,5 +1,6 @@
 package com.hhplus.ticketing.application.payment.service;
 
+import com.hhplus.ticketing.application.userQueue.service.UserQueueProcessService;
 import com.hhplus.ticketing.common.exception.CustomException;
 import com.hhplus.ticketing.domain.payment.PaymentErrorCode;
 import com.hhplus.ticketing.domain.payment.entity.Balance;
@@ -8,29 +9,32 @@ import com.hhplus.ticketing.domain.payment.entity.Payment;
 import com.hhplus.ticketing.domain.payment.repository.BalanceHistoryRepository;
 import com.hhplus.ticketing.domain.payment.repository.BalanceRepository;
 import com.hhplus.ticketing.domain.payment.repository.PaymentRepository;
-import com.hhplus.ticketing.domain.userQueue.UserQueueErrorCode;
-import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
-import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
 import com.hhplus.ticketing.domain.reservation.ReservationErrorCode;
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
 import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
+import com.hhplus.ticketing.domain.userQueue.UserQueueErrorCode;
+import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
+import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
 import com.hhplus.ticketing.presentation.payment.dto.BalanceRequestDto;
 import com.hhplus.ticketing.presentation.payment.dto.PaymentRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
 
+    private final UserQueueProcessService userQueueProcessService;
+
     private final BalanceRepository balanceRepository;
     private final BalanceHistoryRepository balanceHistoryRepository;
     private final PaymentRepository paymentRepository;
-
-    private final UserQueueRepository userQueueRepository;
     private final ReservationRepository reservationRepository;
+    private final UserQueueRepository userQueueRepository;
 
     /**
      * 결제 처리
@@ -38,10 +42,10 @@ public class PaymentService {
      * @param paymentRequestDto
      * @return
      */
+    @Transactional
     public Payment createPayment(String authorization, PaymentRequestDto paymentRequestDto) {
-        // 토큰 검증
-        UserQueue userQueue = userQueueRepository.getUserIdByToken(authorization).orElseThrow(() -> new CustomException(UserQueueErrorCode.USER_NOT_FOUND));
-        if (userQueue.getStatus() == UserQueue.Status.EXPIRED) throw new CustomException(UserQueueErrorCode.TOKEN_EXPIRED);
+        UserQueue userQueue = userQueueRepository.getTokenInfo(authorization)
+                .orElseThrow(() -> new CustomException(UserQueueErrorCode.QUEUE_NOT_FOUND));
         long userId = userQueue.getUserId();
 
         // 예약 정보 확인
@@ -61,15 +65,10 @@ public class PaymentService {
         BalanceHistory history = new BalanceHistory(balance, useAmount, BalanceHistory.Type.USE);
         balanceHistoryRepository.save(history);
 
-        // 결제 이력 등록
-        Payment payment = Payment.builder()
-                .payAmount(useAmount)
-                .status(Payment.Status.DONE)
-                .payDate(LocalDateTime.now())
-                .reservation(reservation)
-                .build();
+        // 대기열/예약 만료 처리
+        userQueueProcessService.expireQueue(userQueue.getUserId(), Reservation.Status.DONE);
 
-        return paymentRepository.save(payment);
+        return paymentRepository.findByReservationId(paymentRequestDto.getReservationId());
     }
 
     /**
@@ -88,6 +87,7 @@ public class PaymentService {
      * @param requestDto
      * @return
      */
+    @Transactional
     public Balance chargeBalance(long userId, BalanceRequestDto requestDto) {
         int chargeAmount = requestDto.getAmount();
         if(chargeAmount <= 0) throw new CustomException(PaymentErrorCode.INVALID_CHARGE_AMOUNT);
@@ -111,6 +111,16 @@ public class PaymentService {
         Balance balance = balanceRepository.getBalance(userId);
         if(balance==null) balance = balanceRepository.save(new Balance(userId, 0));
         return balance;
+    }
+
+    /**
+     * 만료된 임시배정 예약 건 만료 처리
+     */
+    @Transactional
+    public void expirePayment() {
+        LocalDateTime expiredTime = LocalDateTime.now().minusMinutes(5);
+        List<Reservation> expiredReservations = reservationRepository.getExpiredReservations(expiredTime);
+        expiredReservations.stream().forEach(reservation -> userQueueProcessService.expireQueue(reservation.getUserId(), Reservation.Status.EXPIRED));
     }
 
 }

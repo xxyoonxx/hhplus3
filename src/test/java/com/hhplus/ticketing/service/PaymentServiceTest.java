@@ -1,5 +1,6 @@
 package com.hhplus.ticketing.service;
 
+import com.hhplus.ticketing.application.userQueue.service.UserQueueProcessService;
 import com.hhplus.ticketing.domain.concert.entity.ConcertSeat;
 import com.hhplus.ticketing.domain.payment.entity.Payment;
 import com.hhplus.ticketing.application.payment.service.PaymentService;
@@ -27,7 +28,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,16 +49,15 @@ public class PaymentServiceTest {
     @Mock
     private UserQueueRepository userQueueRepository;
 
+    @Mock
+    private UserQueueProcessService userQueueProcessService;
+
     @InjectMocks
     private PaymentService paymentService;
 
     @Test
     @DisplayName("결제 처리")
     void payCharge(){
-        PaymentRequestDto paymentRequestDto = PaymentRequestDto.builder()
-                .reservationId(1L)
-                .build();
-
         ConcertSeat seat01 = ConcertSeat.builder()
                 .seatId(1L)
                 .seatNo("A01")
@@ -75,30 +75,37 @@ public class PaymentServiceTest {
                 .totalPrice(10000)
                 .build();
 
-        UserQueue userQueue = UserQueue.builder()
-                .userId(1L)
-                .status(UserQueue.Status.PROCESSING)
-                .build();
-
         Balance balance = Balance.builder()
                 .userId(1L)
                 .balance(20000)
                 .build();
 
-        when(userQueueRepository.getUserIdByToken("token")).thenReturn(Optional.of(userQueue));
+        UserQueue userQueue = UserQueue.builder()
+                .userId(1L)
+                .status(UserQueue.Status.PROCESSING)
+                .build();
+
+        PaymentRequestDto paymentRequestDto = PaymentRequestDto.builder()
+                .reservationId(1L)
+                .build();
+
+        when(userQueueRepository.getTokenInfo("test-token")).thenReturn(Optional.ofNullable(userQueue));
         when(reservationRepository.getReservationInfo(1L)).thenReturn(Optional.of(reservation));
         when(balanceRepository.getBalance(1L)).thenReturn(balance);
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(balanceHistoryRepository.save(any(BalanceHistory.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Payment payment = paymentService.createPayment("token", paymentRequestDto);
+        Payment mockPayment = Payment.builder()
+                .reservation(reservation)
+                .status(Payment.Status.DONE)
+                .build();
 
-        assertNotNull(payment);
-        assertEquals(10000, payment.getPayAmount());
-        assertEquals(Payment.Status.DONE, payment.getStatus());
-        assertNotNull(payment.getPayDate());
+        when(paymentRepository.findByReservationId(1L)).thenReturn(mockPayment);
+
+        Payment createdPayment = paymentService.createPayment("test-token", paymentRequestDto);
+
+        assertNotNull(createdPayment);
+        assertEquals(reservation.getReservationId(), createdPayment.getReservation().getReservationId());
+        assertEquals(Payment.Status.DONE, createdPayment.getStatus());
     }
-
 
     @Test
     @DisplayName("잔액 조회 - Balance테이블에 userId 존재")
