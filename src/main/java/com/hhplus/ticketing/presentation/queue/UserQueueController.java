@@ -25,7 +25,7 @@ public class UserQueueController {
     @Operation(summary = "대기열 요청")
     @PostMapping("/")
     public ResponseEntity<UserQueueResponseDto> requestQueue(@RequestBody UserQueueRequestDto requestDto) {
-        UserQueueResponseDto enterQueue = userQueueService.enterQueue(requestDto.getUserId());
+        UserQueueResponseDto enterQueue = userQueueService.enterUserQueue(requestDto.getUserId());
         return ResponseEntity.ok(enterQueue);
     }
 

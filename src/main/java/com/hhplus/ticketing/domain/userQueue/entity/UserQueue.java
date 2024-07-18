@@ -2,6 +2,7 @@ package com.hhplus.ticketing.domain.userQueue.entity;
 
 import jakarta.persistence.*;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,18 +10,20 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Data
 @NoArgsConstructor
 @Table(name="user_queue")
 public class UserQueue {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long queueId;
+    private Long queueId;
 
-    private long userId;
+    private Long userId;
 
     private String token;
 
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     private LocalDateTime createdDate;
@@ -41,7 +44,8 @@ public class UserQueue {
         this.expiryDate = expiryDate;
     }
 
-    public void expire() {
-        this.status = Status.EXPIRED;
+    public void changeStatus(Status status) {
+        this.status = status;
     }
+
 }

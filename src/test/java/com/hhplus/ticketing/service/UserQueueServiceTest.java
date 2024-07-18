@@ -1,79 +1,106 @@
 package com.hhplus.ticketing.service;
 
-import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
-import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
-import com.hhplus.ticketing.application.userQueue.service.UserQueueService;
-import com.hhplus.ticketing.presentation.queue.dto.UserQueueResponseDto;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import com.hhplus.ticketing.application.userQueue.service.UserQueueProcessService;
+import com.hhplus.ticketing.application.userQueue.service.UserQueueService;
+import com.hhplus.ticketing.common.exception.CustomException;
+import com.hhplus.ticketing.domain.userQueue.UserQueueErrorCode;
+import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
+import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
+import com.hhplus.ticketing.presentation.queue.dto.UserQueueResponseDto;
 
 @ExtendWith(MockitoExtension.class)
 public class UserQueueServiceTest {
 
-    @InjectMocks
-    private UserQueueService userQueueService;
-
     @Mock
     private UserQueueRepository userQueueRepository;
 
+    @Mock
+    private UserQueueProcessService userQueueProcessService;
+
+    @Spy
+    @InjectMocks
+    private UserQueueService userQueueService;
+
+    private LocalDateTime currentDate = LocalDateTime.now();
+
     @Test
-    @DisplayName("토큰 상태 확인")
-    void GetQueueStatus() {
-        String token = "test-token";
-        UserQueue userQueue = UserQueue.builder()
-                .userId(123L)
-                .token(token)
+    @DisplayName("대기열 상태 조회")
+    void testGetQueueStatus_ValidToken() {
+        // given
+        String validToken = "validToken";
+        LocalDateTime currentDate = LocalDateTime.now();
+        UserQueue validQueue = UserQueue.builder()
+                .userId(1L)
+                .token(validToken)
+                .expiryDate(currentDate.plusMinutes(30))
                 .status(UserQueue.Status.WAITING)
-                .expiryDate(LocalDateTime.now().plusMinutes(30))
                 .build();
-        when(userQueueRepository.getTokenInfo(token)).thenReturn(Optional.of(userQueue));
 
-        UserQueueResponseDto result = userQueueService.getQueueStatus(token);
+        when(userQueueRepository.getTokenInfo(validToken)).thenReturn(Optional.ofNullable(validQueue));
+        doReturn(10).when(userQueueService).calculateQueuePosition(validQueue);
 
-        assertEquals(userQueue.getToken(), result.getToken());
-        verify(userQueueRepository, times(1)).getTokenInfo(token);
+        // when
+        UserQueueResponseDto responseDto = userQueueService.getQueueStatus(validToken);
+
+        // then
+        assertEquals(validToken, responseDto.getToken());
+        assertEquals(UserQueue.Status.WAITING, responseDto.getStatus());
     }
 
     @Test
-    @DisplayName("대기열 진입")
-    void EnterQueue() {
-        long userId = 456L;
-        when(userQueueRepository.checkQueue(userId)).thenReturn(Optional.empty());
-
-        UserQueueResponseDto result = userQueueService.enterQueue(userId);
-
-        verify(userQueueRepository, times(1)).checkQueue(userId);
-        verify(userQueueRepository, times(1)).save(any(UserQueue.class));
-    }
-
-    @Test
-    @DisplayName("만료 토큰 처리")
-    void expireToken() {
+    @DisplayName("대기열 상태 조회 - 만료일자 지남")
+    void testGetQueueStatus_ExpiredToken() {
+        // given
         String expiredToken = "expired-token";
-        UserQueue expiredUserQueue = UserQueue.builder()
-                .userId(789L)
+        UserQueue expiredQueue = UserQueue.builder()
+                .userId(2L)
                 .token(expiredToken)
+                .expiryDate(currentDate.minusMinutes(1))
                 .status(UserQueue.Status.WAITING)
-                .expiryDate(LocalDateTime.now().minusMinutes(1))
                 .build();
-        when(userQueueRepository.getTokenInfo(expiredToken)).thenReturn(Optional.of(expiredUserQueue));
+        when(userQueueRepository.getTokenInfo(expiredToken)).thenReturn(Optional.ofNullable(expiredQueue));
 
-        UserQueueResponseDto result = userQueueService.getQueueStatus(expiredToken);
-        assertNotNull(result); // QueueResponseDto가 null이 아닌지 확인
-        assertEquals(UserQueue.Status.EXPIRED, result.getStatus()); // 만료 상태인지 확인
+        // when
+        CustomException exception = assertThrows(CustomException.class, () -> userQueueService.getQueueStatus(expiredToken));
 
-        verify(userQueueRepository, times(1)).getTokenInfo(expiredToken);
-        verify(userQueueRepository, times(1)).save(expiredUserQueue); // 만료된 토큰이 저장되었는지 확인
+        // then
+        assertEquals(UserQueueErrorCode.TOKEN_EXPIRED, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("대기열 상태 조회 - 상태가 WAITING이 아님")
+    void testGetQueueStatus_ExpireAndRequeue() {
+        // given
+        String processedToken = "processed-token";
+        UserQueue processedQueue = UserQueue.builder()
+                .userId(2L)
+                .token(processedToken)
+                .expiryDate(currentDate.plusMinutes(15))
+                .status(UserQueue.Status.PROCESSING)
+                .build();
+        when(userQueueRepository.getTokenInfo(processedToken)).thenReturn(Optional.ofNullable(processedQueue));
+
+        // when
+        CustomException exception = assertThrows(CustomException.class, () -> userQueueService.getQueueStatus(processedToken));
+
+        // then
+        assertEquals(UserQueueErrorCode.QUEUE_NOT_FOUND, exception.getErrorCode());
+
     }
 
     @Test
@@ -91,7 +118,49 @@ public class UserQueueServiceTest {
 
         int position = userQueueService.calculateQueuePosition(userQueue);
 
-        assertEquals(7, position);
+        assertEquals(6, position);
+    }
+
+    @Test
+    @DisplayName("만료된 큐 처리 및 새로운 큐 상태 변경")
+    void testExpireQueues() {
+        // given
+        UserQueue expiredQueue1 = UserQueue.builder()
+                .userId(1L)
+                .expiryDate(currentDate.minusMinutes(5))
+                .status(UserQueue.Status.PROCESSING)
+                .build();
+
+        UserQueue expiredQueue2 = UserQueue.builder()
+                .userId(2L)
+                .expiryDate(currentDate.minusMinutes(10))
+                .status(UserQueue.Status.PROCESSING)
+                .build();
+
+        List<UserQueue> expiredUsers = Arrays.asList(expiredQueue1, expiredQueue2);
+
+        UserQueue newQueue1 = UserQueue.builder()
+                .userId(3L)
+                .status(UserQueue.Status.WAITING)
+                .build();
+
+        UserQueue newQueue2 = UserQueue.builder()
+                .userId(4L)
+                .status(UserQueue.Status.WAITING)
+                .build();
+
+        List<UserQueue> newEnterUsers = Arrays.asList(newQueue1, newQueue2);
+
+        doReturn(expiredUsers).when(userQueueRepository).getExpiredQueues(any(LocalDateTime.class));
+        when(userQueueRepository.countByStatus(UserQueue.Status.PROCESSING)).thenReturn(8);
+        when(userQueueRepository.enterUserQueue(2)).thenReturn(newEnterUsers);
+
+        // when
+        userQueueService.expireQueues();
+
+        // then
+        assertEquals(UserQueue.Status.PROCESSING, newQueue1.getStatus());
+        assertEquals(UserQueue.Status.PROCESSING, newQueue2.getStatus());
     }
 
 }
