@@ -46,4 +46,11 @@ public class Reservation {
         this.status = status;
         this.totalPrice = totalPrice;
     }
+
+    // 예약 상태값 변경
+    public Reservation changeStatus(Status status) {
+        this.status = status;
+        return this;
+    }
+
 }

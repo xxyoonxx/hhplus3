@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Data
 public class ReservationRequestDto {
 
+    private long reservationId;
     private long detailId;
     private long seatId;
     private long userId;

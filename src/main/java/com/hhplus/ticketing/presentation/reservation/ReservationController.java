@@ -19,14 +19,13 @@ public class ReservationController {
 
     /**
      * 좌석 예약 요청
-     * @param authorization
      * @param requestDto
      * @return
      */
     @Operation(summary = "좌석 예약 요청")
     @PostMapping("/")
-    public ResponseEntity<ReservationResponseDto> reserve(@RequestHeader("Authorization") String authorization, @RequestBody ReservationRequestDto requestDto){
-        ReservationResponseDto reservationResponseDto = ReservationResponseDto.from(reservationService.reserveSeat(requestDto, authorization));
+    public ResponseEntity<ReservationResponseDto> reserve(@RequestBody ReservationRequestDto requestDto){
+        ReservationResponseDto reservationResponseDto = ReservationResponseDto.from(reservationService.reserveSeat(requestDto));
         return ResponseEntity.ok(reservationResponseDto);
     }
 
