@@ -8,6 +8,6 @@ public interface ConcertSeatRepository {
 
     List<ConcertSeat> getConcertSeatsInfo(long concertDetailId);
     ConcertSeat getConcertSeatInfo(long seatId);
-    ConcertSeat saveConcertSeat(ConcertSeat concertSeat);
+    ConcertSeat save(ConcertSeat concertSeat);
 
 }
