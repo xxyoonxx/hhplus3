@@ -38,19 +38,16 @@ public class PaymentService {
 
     /**
      * 결제 처리
-     * @param authorization
      * @param paymentRequestDto
      * @return
      */
     @Transactional
-    public Payment createPayment(String authorization, PaymentRequestDto paymentRequestDto) {
-        UserQueue userQueue = userQueueRepository.getTokenInfo(authorization)
-                .orElseThrow(() -> new CustomException(UserQueueErrorCode.QUEUE_NOT_FOUND));
-        long userId = userQueue.getUserId();
-
+    public Payment createPayment(PaymentRequestDto paymentRequestDto) {
         // 예약 정보 확인
         Reservation reservation = reservationRepository.getReservationInfo(paymentRequestDto.getReservationId())
                 .orElseThrow(() -> new CustomException(ReservationErrorCode.NO_RESERVATION_INFO));
+
+        long userId = reservation.getUserId();
 
         // 잔액 확인
         Balance balance = userInfoValidation(userId);
@@ -66,7 +63,7 @@ public class PaymentService {
         balanceHistoryRepository.save(history);
 
         // 대기열/예약 만료 처리
-        userQueueProcessService.expireQueue(userQueue.getUserId(), Reservation.Status.DONE);
+        userQueueProcessService.expireQueue(userId, Reservation.Status.DONE);
 
         return paymentRepository.findByReservationId(paymentRequestDto.getReservationId());
     }

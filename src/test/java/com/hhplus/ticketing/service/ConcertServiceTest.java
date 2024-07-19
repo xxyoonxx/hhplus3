@@ -44,7 +44,7 @@ public class ConcertServiceTest {
     private ConcertSeat seat02;
     private ConcertDetail concertDetail;
     private Concert concert;
-    String token;
+    private String token="123";
 
     @BeforeEach
     void setUp() {
@@ -76,7 +76,7 @@ public class ConcertServiceTest {
     void getConcerts() {
         when(concertRepository.getAllConcerts()).thenReturn(List.of(concert));
 
-        List<Concert> concertList = concertService.getAllConcerts(token);
+        List<Concert> concertList = concertService.getAllConcerts();
 
         assertThat(concertList).hasSize(1);
         assertThat(concertList.get(0).getTitle()).isEqualTo("콘서트01");
@@ -90,7 +90,7 @@ public class ConcertServiceTest {
 
         when(concertDetailRepository.getConcertDetailInfo(concertId)).thenReturn(List.of(concertDetail));
 
-        List<ConcertDetail> details = concertService.getConcertDetails(token, concertId);
+        List<ConcertDetail> details = concertService.getConcertDetails(concertId);
 
         assertThat(details).hasSize(1);
         assertThat(details.get(0).getConcertDate()).isEqualTo(concertDetail.getConcertDate());
@@ -104,7 +104,7 @@ public class ConcertServiceTest {
 
         when(concertSeatRepository.getConcertSeatsInfo(detailId)).thenReturn(List.of(seat01, seat02));
 
-        List<ConcertSeat> seats = concertService.getConcertSeats(token, detailId);
+        List<ConcertSeat> seats = concertService.getConcertSeats(detailId);
 
         assertThat(seats).hasSize(2);
         assertThat(seats.get(0).getSeatNo()).isEqualTo("A01");

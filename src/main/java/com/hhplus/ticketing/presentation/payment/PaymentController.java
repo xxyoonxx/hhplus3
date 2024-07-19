@@ -21,13 +21,13 @@ public class PaymentController {
 
     /**
      * 결제 처리
-     * @param authorization
+     * @param paymentRequestDto
      * @return
      */
     @Operation(summary = "결제")
     @PostMapping("/")
-    public ResponseEntity<PaymentResponseDto> payCharge(@RequestHeader("Authorization") String authorization, @RequestBody PaymentRequestDto paymentRequestDto){
-        PaymentResponseDto payCharge = PaymentResponseDto.from(paymentService.createPayment(authorization, paymentRequestDto));
+    public ResponseEntity<PaymentResponseDto> payCharge(@RequestBody PaymentRequestDto paymentRequestDto){
+        PaymentResponseDto payCharge = PaymentResponseDto.from(paymentService.createPayment(paymentRequestDto));
         return ResponseEntity.ok(payCharge);
     }
 

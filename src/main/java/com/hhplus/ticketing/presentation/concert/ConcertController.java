@@ -26,8 +26,8 @@ public class ConcertController {
      */
     @Operation(summary = "콘서트 목록 조회")
     @GetMapping("/")
-    public ResponseEntity<List<ConcertResponseDto>> getConcertsList(@RequestHeader("Authorization") String authorization) {
-        List<ConcertResponseDto> concertResponseDtos = ConcertResponseDto.from(concertService.getAllConcerts(authorization));
+    public ResponseEntity<List<ConcertResponseDto>> getConcertsList() {
+        List<ConcertResponseDto> concertResponseDtos = ConcertResponseDto.from(concertService.getAllConcerts());
         return ResponseEntity.ok(concertResponseDtos);
     }
 
@@ -38,8 +38,8 @@ public class ConcertController {
      */
     @Operation(summary = "예약 가능 날짜 조회 ")
     @GetMapping("/{concertId}/dates")
-    public ResponseEntity<List<ConcertDetailResponseDto>> getConcertsByDate(@RequestHeader("Authorization") String authorization, @PathVariable long concertId) {
-        List<ConcertDetailResponseDto> concertDetailResponseDtos = ConcertDetailResponseDto.from(concertService.getConcertDetails(authorization, concertId));
+    public ResponseEntity<List<ConcertDetailResponseDto>> getConcertsByDate(@PathVariable long concertId) {
+        List<ConcertDetailResponseDto> concertDetailResponseDtos = ConcertDetailResponseDto.from(concertService.getConcertDetails(concertId));
         return ResponseEntity.ok(concertDetailResponseDtos);
     }
 
@@ -51,8 +51,8 @@ public class ConcertController {
      */
     @Operation(summary = "예약 가능 좌석 조회")
     @GetMapping("/{concertId}/dates/{detailId}/seats")
-    public ResponseEntity<List<ConcertSeatResponseDto>> getAvailableSeats(@RequestHeader("Authorization") String authorization, @PathVariable long concertId, @PathVariable long detailId) {
-        List<ConcertSeatResponseDto> concertSeatResponseDtos = ConcertSeatResponseDto.from(concertService.getConcertSeats(authorization, detailId));
+    public ResponseEntity<List<ConcertSeatResponseDto>> getAvailableSeats(@PathVariable long concertId, @PathVariable long detailId) {
+        List<ConcertSeatResponseDto> concertSeatResponseDtos = ConcertSeatResponseDto.from(concertService.getConcertSeats(detailId));
         return ResponseEntity.ok(concertSeatResponseDtos);
     }
 

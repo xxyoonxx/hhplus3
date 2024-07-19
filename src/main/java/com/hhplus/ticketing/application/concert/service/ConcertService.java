@@ -1,5 +1,7 @@
 package com.hhplus.ticketing.application.concert.service;
 
+import com.hhplus.ticketing.common.exception.CustomException;
+import com.hhplus.ticketing.domain.concert.ConcertErrorCode;
 import com.hhplus.ticketing.domain.concert.entity.Concert;
 import com.hhplus.ticketing.domain.concert.entity.ConcertDetail;
 import com.hhplus.ticketing.domain.concert.entity.ConcertSeat;
@@ -7,6 +9,7 @@ import com.hhplus.ticketing.domain.concert.repository.ConcertDetailRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertSeatRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,7 +26,11 @@ public class ConcertService {
      * 콘서트 조회
      * @return
      */
-    public List<Concert> getAllConcerts(String authorization) {
+    public List<Concert> getAllConcerts() {
+        List<Concert> concerts = concertRepository.getAllConcerts();
+        if (concerts.isEmpty() || concerts.size()==0) {
+            throw new CustomException(ConcertErrorCode.NO_CONCERT_AVALIABLE);
+        }
         return concertRepository.getAllConcerts();
     }
 
@@ -32,7 +39,11 @@ public class ConcertService {
      * @param concertId
      * @return
      */
-    public List<ConcertDetail> getConcertDetails(String authorization, long concertId) {
+    public List<ConcertDetail> getConcertDetails(long concertId) {
+        List<ConcertDetail> concertDetails = concertDetailRepository.getConcertDetailInfo(concertId);
+        if (concertDetails.isEmpty() || concertDetails.size()==0) {
+            throw new CustomException(ConcertErrorCode.NO_DATE_AVALIABLE);
+        }
         return concertDetailRepository.getConcertDetailInfo(concertId);
     }
 
@@ -41,7 +52,11 @@ public class ConcertService {
      * @param concertDeatilId
      * @return
      */
-    public List<ConcertSeat> getConcertSeats(String authorization, long concertDeatilId) {
+    public List<ConcertSeat> getConcertSeats(long concertDeatilId) {
+        List<ConcertSeat> concertSeats = concertSeatRepository.getConcertSeatsInfo(concertDeatilId);
+        if (concertSeats.isEmpty() || concertSeats.size()==0) {
+            throw new CustomException(ConcertErrorCode.NO_SEAT_AVALIABLE);
+        }
         return concertSeatRepository.getConcertSeatsInfo(concertDeatilId);
     }
 

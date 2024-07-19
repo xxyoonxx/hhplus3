@@ -80,16 +80,10 @@ public class PaymentServiceTest {
                 .balance(20000)
                 .build();
 
-        UserQueue userQueue = UserQueue.builder()
-                .userId(1L)
-                .status(UserQueue.Status.PROCESSING)
-                .build();
-
         PaymentRequestDto paymentRequestDto = PaymentRequestDto.builder()
                 .reservationId(1L)
                 .build();
 
-        when(userQueueRepository.getTokenInfo("test-token")).thenReturn(Optional.ofNullable(userQueue));
         when(reservationRepository.getReservationInfo(1L)).thenReturn(Optional.of(reservation));
         when(balanceRepository.getBalance(1L)).thenReturn(balance);
 
@@ -100,7 +94,7 @@ public class PaymentServiceTest {
 
         when(paymentRepository.findByReservationId(1L)).thenReturn(mockPayment);
 
-        Payment createdPayment = paymentService.createPayment("test-token", paymentRequestDto);
+        Payment createdPayment = paymentService.createPayment(paymentRequestDto);
 
         assertNotNull(createdPayment);
         assertEquals(reservation.getReservationId(), createdPayment.getReservation().getReservationId());
