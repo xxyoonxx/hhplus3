@@ -24,7 +24,7 @@ public class ConcertSeatRepositoryImpl implements ConcertSeatRepository {
     }
 
     @Override
-    public ConcertSeat saveConcertSeat(ConcertSeat concertSeat) {
+    public ConcertSeat save(ConcertSeat concertSeat) {
         return concertSeatJpaRepository.save(concertSeat);
     }
 

@@ -6,8 +6,8 @@ import com.hhplus.ticketing.domain.concert.entity.ConcertSeat;
 import com.hhplus.ticketing.domain.concert.repository.ConcertDetailRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertSeatRepository;
+import com.hhplus.ticketing.domain.payment.entity.Payment;
 import com.hhplus.ticketing.domain.payment.repository.PaymentRepository;
-import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
 import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
 import com.hhplus.ticketing.application.reservation.service.ReservationService;
@@ -18,15 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
-import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,8 +40,9 @@ public class ReservationServiceTest {
 
     @Mock
     private ConcertDetailRepository concertDetailRepository;
+
     @Mock
-    private UserQueueRepository userQueueRepository;
+    private PaymentRepository paymentRepository;
 
     @Mock
     private ConcertRepository concertRepository;
@@ -55,7 +50,8 @@ public class ReservationServiceTest {
     private ConcertSeat seat01;
     private ConcertDetail concertDetail;
     private Concert concert;
-    private UserQueue userQueue;
+    private Reservation reservation;
+    private Payment payment;
 
     @BeforeEach
     public void setUp() {
@@ -75,22 +71,18 @@ public class ReservationServiceTest {
                 .status(ConcertSeat.Status.AVAILABLE)
                 .concertDetail(concertDetail)
                 .build();
-        userQueue = UserQueue.builder()
-                .userId(1L)
-                .status(UserQueue.Status.PROCESSING)
-                .build();
-        Reservation reservation = Reservation.builder()
+        reservation = Reservation.builder()
                 .reservationId(1L)
                 .concertSeat(seat01)
-                .totalPrice(10000)
+                .status(Reservation.Status.WAITING)
                 .build();
     }
 
     @Test
     @DisplayName("좌석 예약")
     public void reserveSeat() {
-        String authorization = "token-sample";
         ReservationRequestDto dto = ReservationRequestDto.builder()
+                .userId(1L)
                 .detailId(1L)
                 .seatId(1L)
                 .reservationDate(LocalDateTime.now())
@@ -101,14 +93,15 @@ public class ReservationServiceTest {
         when(concertDetailRepository.getConcertInfoByDetailId(1L)).thenReturn(concertDetail);
         when(concertRepository.getConcertInfo(1L)).thenReturn(concert);
         when(reservationRepository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(userQueueRepository.getUserIdByToken(authorization)).thenReturn(Optional.of(userQueue));
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Reservation reserved = reservationService.reserveSeat(dto, authorization);
+        Reservation reserved = reservationService.reserveSeat(dto);
 
         assertNotNull(reserved);
         assertEquals(1L, reserved.getUserId());
         assertEquals("콘서트01", reserved.getConcertTitle());
         assertEquals(10000, reserved.getTotalPrice());
+        assertEquals(Reservation.Status.WAITING, reserved.getStatus());
     }
 
 }

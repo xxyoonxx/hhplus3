@@ -1,16 +1,15 @@
 package com.hhplus.ticketing.application.concert.service;
 
 import com.hhplus.ticketing.common.exception.CustomException;
+import com.hhplus.ticketing.domain.concert.ConcertErrorCode;
 import com.hhplus.ticketing.domain.concert.entity.Concert;
 import com.hhplus.ticketing.domain.concert.entity.ConcertDetail;
 import com.hhplus.ticketing.domain.concert.entity.ConcertSeat;
 import com.hhplus.ticketing.domain.concert.repository.ConcertDetailRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertSeatRepository;
-import com.hhplus.ticketing.domain.userQueue.UserQueueErrorCode;
-import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
-import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,16 +21,16 @@ public class ConcertService {
     private final ConcertRepository concertRepository;
     private final ConcertDetailRepository concertDetailRepository;
     private final ConcertSeatRepository concertSeatRepository;
-    private final UserQueueRepository userQueueRepository;
 
     /**
      * 콘서트 조회
      * @return
      */
-    public List<Concert> getAllConcerts(String authorization) {
-        // 토큰 검증
-        UserQueue userQueue = userQueueRepository.getUserIdByToken(authorization).orElseThrow(() -> new CustomException(UserQueueErrorCode.USER_NOT_FOUND));
-        if (userQueue.getStatus() == UserQueue.Status.EXPIRED) throw new CustomException(UserQueueErrorCode.TOKEN_EXPIRED);
+    public List<Concert> getAllConcerts() {
+        List<Concert> concerts = concertRepository.getAllConcerts();
+        if (concerts.isEmpty() || concerts.size()==0) {
+            throw new CustomException(ConcertErrorCode.NO_CONCERT_AVALIABLE);
+        }
         return concertRepository.getAllConcerts();
     }
 
@@ -40,10 +39,11 @@ public class ConcertService {
      * @param concertId
      * @return
      */
-    public List<ConcertDetail> getConcertDetails(String authorization, long concertId) {
-        // 토큰 검증
-        UserQueue userQueue = userQueueRepository.getUserIdByToken(authorization).orElseThrow(() -> new CustomException(UserQueueErrorCode.USER_NOT_FOUND));
-        if (userQueue.getStatus() == UserQueue.Status.EXPIRED) throw new CustomException(UserQueueErrorCode.TOKEN_EXPIRED);
+    public List<ConcertDetail> getConcertDetails(long concertId) {
+        List<ConcertDetail> concertDetails = concertDetailRepository.getConcertDetailInfo(concertId);
+        if (concertDetails.isEmpty() || concertDetails.size()==0) {
+            throw new CustomException(ConcertErrorCode.NO_DATE_AVALIABLE);
+        }
         return concertDetailRepository.getConcertDetailInfo(concertId);
     }
 
@@ -52,10 +52,11 @@ public class ConcertService {
      * @param concertDeatilId
      * @return
      */
-    public List<ConcertSeat> getConcertSeats(String authorization, long concertDeatilId) {
-        // 토큰 검증
-        UserQueue userQueue = userQueueRepository.getUserIdByToken(authorization).orElseThrow(() -> new CustomException(UserQueueErrorCode.USER_NOT_FOUND));
-        if (userQueue.getStatus() == UserQueue.Status.EXPIRED) throw new CustomException(UserQueueErrorCode.TOKEN_EXPIRED);
+    public List<ConcertSeat> getConcertSeats(long concertDeatilId) {
+        List<ConcertSeat> concertSeats = concertSeatRepository.getConcertSeatsInfo(concertDeatilId);
+        if (concertSeats.isEmpty() || concertSeats.size()==0) {
+            throw new CustomException(ConcertErrorCode.NO_SEAT_AVALIABLE);
+        }
         return concertSeatRepository.getConcertSeatsInfo(concertDeatilId);
     }
 

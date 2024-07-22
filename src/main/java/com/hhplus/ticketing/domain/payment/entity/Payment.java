@@ -41,4 +41,9 @@ public class Payment {
         WAITING, DONE, EXPIRED
     }
 
+    public Payment changeStatus(Status status) {
+        this.status = status;
+        return this;
+    }
+
 }

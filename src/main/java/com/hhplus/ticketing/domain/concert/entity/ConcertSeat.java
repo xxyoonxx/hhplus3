@@ -4,10 +4,8 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
 @Entity
 @Table(name="concert_seat")
 @NoArgsConstructor
@@ -39,5 +37,10 @@ public class ConcertSeat {
         this.seatNo = seatNo;
         this.status = status;
         this.seatPrice = seatPrice;
+    }
+
+    public ConcertSeat changeStatus(Status status) {
+        this.status = status;
+        return this;
     }
 }

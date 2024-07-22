@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ConcertJpaRepository  extends JpaRepository<Concert, Long> {
     Concert getByConcertId(Long concertId);
+
 }
