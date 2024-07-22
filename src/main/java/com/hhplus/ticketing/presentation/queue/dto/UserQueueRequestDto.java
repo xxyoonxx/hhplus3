@@ -7,7 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder
 @Data
-public class QueueRequestDto {
+public class UserQueueRequestDto {
 
     private long userId;
 

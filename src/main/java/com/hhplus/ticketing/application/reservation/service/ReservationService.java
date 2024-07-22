@@ -5,9 +5,11 @@ import com.hhplus.ticketing.domain.concert.entity.ConcertSeat;
 import com.hhplus.ticketing.domain.concert.repository.ConcertDetailRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertSeatRepository;
-import com.hhplus.ticketing.domain.queue.QueueErrorCode;
-import com.hhplus.ticketing.domain.queue.entity.Queue;
-import com.hhplus.ticketing.domain.queue.repository.QueueRepository;
+import com.hhplus.ticketing.domain.payment.entity.Payment;
+import com.hhplus.ticketing.domain.payment.repository.PaymentRepository;
+import com.hhplus.ticketing.domain.userQueue.UserQueueErrorCode;
+import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
+import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
 import com.hhplus.ticketing.domain.reservation.ReservationErrorCode;
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
 import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.*;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +28,10 @@ public class ReservationService {
     private final ConcertSeatRepository concertSeatRepository;
     private final ConcertRepository concertRepository;
     private final ConcertDetailRepository concertDetailRepository;
-    private final QueueRepository queueRepository;
+    private final UserQueueRepository userQueueRepository;
+
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final ConcurrentHashMap<Long, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
 
     /**
      * 좌석 예약
@@ -38,9 +44,9 @@ public class ReservationService {
         if(concertSeat==null || concertSeat.getStatus()==ConcertSeat.Status.OCCUPIED) throw new CustomException(ReservationErrorCode.NO_SEAT_AVAILABLE);
 
         // 토큰 확인
-        Queue queue = queueRepository.getUserIdByToken(authorization).orElseThrow(() -> new CustomException(QueueErrorCode.USER_NOT_FOUND));
-        if (queue.getStatus() == Queue.Status.EXPIRED) throw new CustomException(QueueErrorCode.TOKEN_EXPIRED);
-        long userId = queue.getUserId();
+        UserQueue userQueue = userQueueRepository.getUserIdByToken(authorization).orElseThrow(() -> new CustomException(UserQueueErrorCode.USER_NOT_FOUND));
+        if (userQueue.getStatus() == UserQueue.Status.EXPIRED) throw new CustomException(UserQueueErrorCode.TOKEN_EXPIRED);
+        long userId = userQueue.getUserId();
 
         // 콘서트 정보 가져오기
         long concertId = concertDetailRepository.getConcertInfoByDetailId(requestDto.getDetailId()).getConcert().getConcertId();
@@ -59,7 +65,8 @@ public class ReservationService {
                 .totalPrice(requestDto.getTotalPrice())
                 .build();
 
-        return reservationRepository.reserve(reservation);
+        reservationRepository.save(reservation);
+        return reservation;
     }
 
 }

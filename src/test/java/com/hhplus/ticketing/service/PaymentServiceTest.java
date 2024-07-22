@@ -8,8 +8,8 @@ import com.hhplus.ticketing.domain.payment.entity.BalanceHistory;
 import com.hhplus.ticketing.domain.payment.repository.BalanceHistoryRepository;
 import com.hhplus.ticketing.domain.payment.repository.BalanceRepository;
 import com.hhplus.ticketing.domain.payment.repository.PaymentRepository;
-import com.hhplus.ticketing.domain.queue.entity.Queue;
-import com.hhplus.ticketing.domain.queue.repository.QueueRepository;
+import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
+import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
 import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
 import com.hhplus.ticketing.presentation.payment.dto.BalanceRequestDto;
@@ -46,7 +46,7 @@ public class PaymentServiceTest {
     private PaymentRepository paymentRepository;
 
     @Mock
-    private QueueRepository queueRepository;
+    private UserQueueRepository userQueueRepository;
 
     @InjectMocks
     private PaymentService paymentService;
@@ -75,9 +75,9 @@ public class PaymentServiceTest {
                 .totalPrice(10000)
                 .build();
 
-        Queue queue = Queue.builder()
+        UserQueue userQueue = UserQueue.builder()
                 .userId(1L)
-                .status(Queue.Status.PROCESSING)
+                .status(UserQueue.Status.PROCESSING)
                 .build();
 
         Balance balance = Balance.builder()
@@ -85,7 +85,7 @@ public class PaymentServiceTest {
                 .balance(20000)
                 .build();
 
-        when(queueRepository.getUserIdByToken("token")).thenReturn(Optional.of(queue));
+        when(userQueueRepository.getUserIdByToken("token")).thenReturn(Optional.of(userQueue));
         when(reservationRepository.getReservationInfo(1L)).thenReturn(Optional.of(reservation));
         when(balanceRepository.getBalance(1L)).thenReturn(balance);
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
