@@ -21,6 +21,7 @@ public class ConcertSeat {
 
     private String seatNo;
 
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     private int seatPrice;

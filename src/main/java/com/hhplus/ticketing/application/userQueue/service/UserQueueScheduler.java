@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class QueueScheduler {
+public class UserQueueScheduler {
 
     private final UserQueueService userQueueService;
 

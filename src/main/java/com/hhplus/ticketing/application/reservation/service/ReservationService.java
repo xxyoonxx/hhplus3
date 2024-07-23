@@ -39,7 +39,7 @@ public class ReservationService {
 
         // 콘서트 정보 가져오기
         long concertId = concertDetailRepository.getConcertInfoByDetailId(requestDto.getDetailId()).getConcert().getConcertId();
-        String concertTitle = concertRepository.getConcertInfo(concertId).getTitle();
+        String concertTitle = concertRepository.getConcertInfo(concertId).getConcertTitle();
 
         // 좌석 배정
         concertSeat.changeStatus(ConcertSeat.Status.OCCUPIED);
