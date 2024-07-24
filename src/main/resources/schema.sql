@@ -11,6 +11,14 @@ CREATE TABLE balance (
                          balance INT
 );
 
+CREATE TABLE balance_history (
+                                 balance_history_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                 balance_id BIGINT NOT NULL,
+                                 amount INT NOT NULL,
+                                 type VARCHAR(50) NOT NULL,
+                                 created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE concert (
                          concert_id BIGINT AUTO_INCREMENT PRIMARY KEY,
                          concert_title VARCHAR(255)

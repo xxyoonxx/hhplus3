@@ -40,8 +40,7 @@ public class ConcertSeat {
         this.seatPrice = seatPrice;
     }
 
-    public ConcertSeat changeStatus(Status status) {
+    public void changeStatus(Status status) {
         this.status = status;
-        return this;
     }
 }

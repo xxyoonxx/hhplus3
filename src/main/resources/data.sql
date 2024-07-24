@@ -1,9 +1,6 @@
 -- users 테이블
 INSERT INTO users (user_name, email, phone) VALUES ('John Doe', 'john@example.com', '123-456-7890');
 
--- balance 테이블
-INSERT INTO balance (user_id, balance) VALUES (1, 100000);
-
 -- concert 테이블
 INSERT INTO concert (concert_title) VALUES ('콘서트01');
 

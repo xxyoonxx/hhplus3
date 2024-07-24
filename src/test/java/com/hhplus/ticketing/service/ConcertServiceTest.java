@@ -66,7 +66,7 @@ public class ConcertServiceTest {
                 .concertSeat(List.of(seat01, seat02))
                 .build();
         concert = Concert.builder()
-                .title("콘서트01")
+                .concertTitle("콘서트01")
                 .consertDetail(List.of(concertDetail))
                 .build();
     }
@@ -79,7 +79,7 @@ public class ConcertServiceTest {
         List<Concert> concertList = concertService.getAllConcerts();
 
         assertThat(concertList).hasSize(1);
-        assertThat(concertList.get(0).getTitle()).isEqualTo("콘서트01");
+        assertThat(concertList.get(0).getConcertTitle()).isEqualTo("콘서트01");
         assertThat(concertList.get(0).getConsertDetail().get(0).getConcertSeat()).hasSize(2);
     }
 

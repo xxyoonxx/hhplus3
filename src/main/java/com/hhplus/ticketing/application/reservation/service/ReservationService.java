@@ -43,7 +43,6 @@ public class ReservationService {
 
         // 좌석 배정
         concertSeat.changeStatus(ConcertSeat.Status.OCCUPIED);
-        concertSeatRepository.save(concertSeat);
 
         // 예약생성
         Reservation reservation = Reservation.builder()
@@ -52,7 +51,7 @@ public class ReservationService {
                 .concertTitle(concertTitle)
                 .reservationDate(LocalDateTime.now())
                 .status(Reservation.Status.WAITING)
-                .totalPrice(requestDto.getTotalPrice())
+                .totalPrice(concertSeat.getSeatPrice())
                 .build();
         reservationRepository.save(reservation);
 

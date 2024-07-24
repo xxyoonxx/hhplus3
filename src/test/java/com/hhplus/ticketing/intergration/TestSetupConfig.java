@@ -65,7 +65,7 @@ public class TestSetupConfig {
     @Bean
     public Concert concert(ConcertDetail concertDetail) {
         Concert concert = Concert.builder()
-                .title("콘서트01")
+                .concertTitle("콘서트01")
                 .consertDetail(List.of(concertDetail))
                 .build();
         concertJpaRepository.save(concert);

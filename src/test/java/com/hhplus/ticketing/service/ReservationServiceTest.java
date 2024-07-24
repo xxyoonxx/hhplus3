@@ -57,7 +57,7 @@ public class ReservationServiceTest {
     public void setUp() {
         concert = Concert.builder()
                 .concertId(1L)
-                .title("콘서트01")
+                .concertTitle("콘서트01")
                 .build();
         concertDetail = ConcertDetail.builder()
                 .detailId(1L)

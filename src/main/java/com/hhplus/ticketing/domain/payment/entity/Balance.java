@@ -33,14 +33,12 @@ public class Balance {
         this.balance = balance;
     }
 
-    public Balance chargeBalance(int chargeAmount) {
+    public void chargeBalance(int chargeAmount) {
         this.balance += chargeAmount;
-        return this;
     }
 
-    public Balance useBalance(int useAmount) {
+    public void useBalance(int useAmount) {
         this.balance -= useAmount;
-        return this;
     }
 
 }

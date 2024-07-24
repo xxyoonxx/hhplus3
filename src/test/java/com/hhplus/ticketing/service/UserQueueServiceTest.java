@@ -52,7 +52,7 @@ public class UserQueueServiceTest {
                 .build();
 
         when(userQueueRepository.getTokenInfo(validToken)).thenReturn(Optional.ofNullable(validQueue));
-        doReturn(10).when(userQueueService).calculateQueuePosition(validQueue);
+        doReturn(10).when(userQueueService).getQueueStatus(validToken);
 
         // when
         UserQueueResponseDto responseDto = userQueueService.getQueueStatus(validToken);
@@ -116,9 +116,9 @@ public class UserQueueServiceTest {
                 .expiryDate(LocalDateTime.now().plusHours(1))
                 .build();
 
-        int position = userQueueService.calculateQueuePosition(userQueue);
+        UserQueueResponseDto position = userQueueService.getQueueStatus(userQueue.getToken());
 
-        assertEquals(6, position);
+        assertEquals(6, position.getQueuePosition());
     }
 
     @Test

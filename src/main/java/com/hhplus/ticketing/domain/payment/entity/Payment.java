@@ -26,6 +26,7 @@ public class Payment {
 
     private long payAmount;
 
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     @Builder
