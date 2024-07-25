@@ -57,7 +57,6 @@ public class PaymentIntergrationTest {
     @Test
     @DisplayName("동시성 테스트 - 충전")
     void chargeConcurrencyTest() throws InterruptedException {
-
         int amount = 1000;
         BalanceRequestDto balanceRequestDto = BalanceRequestDto.builder()
                 .amount(amount)
