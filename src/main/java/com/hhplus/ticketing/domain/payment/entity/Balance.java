@@ -27,10 +27,14 @@ public class Balance {
     @OneToMany(mappedBy = "balance")
     private List<BalanceHistory> balanceHistoryEntity = new ArrayList<>();
 
+    @Version
+    private int version = 0;
+
     @Builder
-    public Balance(long userId, int balance) {
+    public Balance(long userId, int balance, int version) {
         this.userId = userId;
         this.balance = balance;
+        this.version = version;
     }
 
     public void chargeBalance(int chargeAmount) {

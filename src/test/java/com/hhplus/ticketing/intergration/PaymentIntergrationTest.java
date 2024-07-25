@@ -17,13 +17,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
-//@Import(TestSetupConfig.class)
 public class PaymentIntergrationTest {
 
     @Autowired
@@ -37,23 +38,7 @@ public class PaymentIntergrationTest {
 
     @Autowired
     private ReservationRepository reservationRepository;
-/*
 
-    @Autowired
-    private ConcertSeat seat01;
-
-    @Autowired
-    private ConcertSeat seat02;
-
-    @Autowired
-    private ConcertDetail concertDetail;
-
-    @Autowired
-    private Concert concert;
-
-    @Autowired
-    private Reservation reservation;
-*/
     @Test
     @DisplayName("동시성 테스트 - 충전")
     void chargeConcurrencyTest() throws InterruptedException {
@@ -62,31 +47,30 @@ public class PaymentIntergrationTest {
                 .amount(amount)
                 .build();
 
-        final int threadCount = 10;
+        final int threadCount = 5;
         final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
 
-        AtomicInteger success = new AtomicInteger(0);
-        AtomicInteger fail = new AtomicInteger(0);
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failCount = new AtomicInteger(0);
 
         for (int i = 0; i < threadCount; i++) {
-            new Thread(() -> {
+            executorService.execute(() -> {
                 try {
                     paymentService.chargeBalance(1, balanceRequestDto);
-                    System.err.println("successCount: " + success.incrementAndGet());
+                    successCount.getAndIncrement();
                 } catch(Exception e) {
-                    System.err.println("failCount: " + fail.incrementAndGet());
-                    System.err.println(e.getMessage());
+                    failCount.getAndIncrement();
                 } finally {
                     countDownLatch.countDown();
                 }
-            }).start();
+            });
         }
         countDownLatch.await();
-        Thread.sleep(1000);
 
-        assertEquals(amount * threadCount, paymentService.getBalance(1));
-        assertEquals(success.get(),threadCount);
-
+        assertEquals(1, successCount.get());
+        assertEquals(threadCount-1, failCount.get());
+        assertEquals(1000, paymentService.getBalance(1).getBalance());
     }
 
     @Test

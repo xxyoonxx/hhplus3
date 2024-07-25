@@ -12,13 +12,13 @@ import com.hhplus.ticketing.domain.payment.repository.PaymentRepository;
 import com.hhplus.ticketing.domain.reservation.ReservationErrorCode;
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
 import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
-import com.hhplus.ticketing.domain.userQueue.UserQueueErrorCode;
-import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
 import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
 import com.hhplus.ticketing.presentation.payment.dto.BalanceRequestDto;
 import com.hhplus.ticketing.presentation.payment.dto.PaymentRequestDto;
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -106,7 +106,7 @@ public class PaymentService {
     @Transactional
     public Balance userInfoValidation(long userId) {
         Balance balance = balanceRepository.getBalance(userId);
-        if(balance==null) balance = balanceRepository.save(new Balance(userId, 0));
+        if(balance==null) balance = balanceRepository.save(new Balance(userId, 0, 0));
         return balance;
     }
 

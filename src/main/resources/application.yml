@@ -31,6 +31,9 @@ spring:
   sql:
     init:
       platform: h2
+      mode: always
+
+
 
 logging:
   level:
