@@ -42,7 +42,7 @@ public class TestSetupConfig {
     @Bean
     public ConcertSeat seat02() {
         ConcertSeat seat = ConcertSeat.builder()
-                .seatId(10L)
+                .seatId(2L)
                 .seatNo("B01")
                 .seatPrice(5000)
                 .status(ConcertSeat.Status.OCCUPIED)

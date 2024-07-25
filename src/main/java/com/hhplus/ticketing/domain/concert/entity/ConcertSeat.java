@@ -26,6 +26,9 @@ public class ConcertSeat {
 
     private int seatPrice;
 
+    @Version
+    private long version;
+
     public enum Status {
         OCCUPIED,
         AVAILABLE

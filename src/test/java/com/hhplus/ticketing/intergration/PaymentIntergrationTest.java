@@ -2,29 +2,28 @@ package com.hhplus.ticketing.intergration;
 
 import com.hhplus.ticketing.application.payment.service.PaymentService;
 import com.hhplus.ticketing.common.exception.CustomException;
-import com.hhplus.ticketing.domain.concert.entity.Concert;
-import com.hhplus.ticketing.domain.concert.entity.ConcertDetail;
-import com.hhplus.ticketing.domain.concert.entity.ConcertSeat;
 import com.hhplus.ticketing.domain.payment.entity.Balance;
 import com.hhplus.ticketing.domain.payment.entity.Payment;
 import com.hhplus.ticketing.domain.payment.repository.BalanceRepository;
 import com.hhplus.ticketing.domain.payment.repository.PaymentRepository;
-import com.hhplus.ticketing.domain.reservation.entity.Reservation;
 import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
+import com.hhplus.ticketing.presentation.payment.dto.BalanceRequestDto;
 import com.hhplus.ticketing.presentation.payment.dto.PaymentRequestDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
-@Import(TestSetupConfig.class)
+//@Import(TestSetupConfig.class)
 public class PaymentIntergrationTest {
 
     @Autowired
@@ -38,6 +37,7 @@ public class PaymentIntergrationTest {
 
     @Autowired
     private ReservationRepository reservationRepository;
+/*
 
     @Autowired
     private ConcertSeat seat01;
@@ -53,6 +53,42 @@ public class PaymentIntergrationTest {
 
     @Autowired
     private Reservation reservation;
+*/
+    @Test
+    @DisplayName("동시성 테스트 - 충전")
+    void chargeConcurrencyTest() throws InterruptedException {
+
+        int amount = 1000;
+        BalanceRequestDto balanceRequestDto = BalanceRequestDto.builder()
+                .amount(amount)
+                .build();
+
+        final int threadCount = 10;
+        final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
+
+        AtomicInteger success = new AtomicInteger(0);
+        AtomicInteger fail = new AtomicInteger(0);
+
+        for (int i = 0; i < threadCount; i++) {
+            new Thread(() -> {
+                try {
+                    paymentService.chargeBalance(1, balanceRequestDto);
+                    System.err.println("successCount: " + success.incrementAndGet());
+                } catch(Exception e) {
+                    System.err.println("failCount: " + fail.incrementAndGet());
+                    System.err.println(e.getMessage());
+                } finally {
+                    countDownLatch.countDown();
+                }
+            }).start();
+        }
+        countDownLatch.await();
+        Thread.sleep(1000);
+
+        assertEquals(amount * threadCount, paymentService.getBalance(1));
+        assertEquals(success.get(),threadCount);
+
+    }
 
     @Test
     @DisplayName("결제 처리")
@@ -71,7 +107,7 @@ public class PaymentIntergrationTest {
         Payment createdPayment = paymentService.createPayment(paymentRequestDto);
 
         assertNotNull(createdPayment);
-        assertEquals(reservation.getReservationId(), createdPayment.getReservation().getReservationId());
+        assertEquals(1, createdPayment.getReservation().getReservationId());
         assertEquals(Payment.Status.DONE, createdPayment.getStatus());
 
     }
