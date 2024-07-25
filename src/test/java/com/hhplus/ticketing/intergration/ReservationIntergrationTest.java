@@ -82,7 +82,7 @@ public class ReservationIntergrationTest {
         countDownLatch.await();
         Thread.sleep(1000);
 
-        ConcertSeat concertSeat = concertSeatJpaRepository.findByConcertSeatId(1L);
+        ConcertSeat concertSeat = concertSeatJpaRepository.findBySeatId(1L);
 
         assertEquals(1, concertSeat.getVersion());
         assertEquals(ConcertSeat.Status.OCCUPIED, concertSeat.getStatus());

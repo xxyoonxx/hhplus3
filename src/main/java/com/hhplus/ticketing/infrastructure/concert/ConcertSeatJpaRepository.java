@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ConcertSeatJpaRepository extends JpaRepository<ConcertSeat, Long> {
     List<ConcertSeat> findByConcertDetailDetailId(Long concertDetailId);
-    ConcertSeat findByConcertSeatId(Long concertSeatId);
+    ConcertSeat findBySeatId(Long SeatId);
 }
