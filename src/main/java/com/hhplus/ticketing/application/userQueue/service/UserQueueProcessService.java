@@ -1,7 +1,6 @@
 package com.hhplus.ticketing.application.userQueue.service;
 
 import com.hhplus.ticketing.common.exception.CustomException;
-import com.hhplus.ticketing.domain.concert.ConcertErrorCode;
 import com.hhplus.ticketing.domain.concert.entity.ConcertSeat;
 import com.hhplus.ticketing.domain.concert.repository.ConcertSeatRepository;
 import com.hhplus.ticketing.domain.payment.entity.Payment;
@@ -73,7 +72,7 @@ public class UserQueueProcessService {
     private void updateConcertSeatStatus(Reservation reservation) {
         long seatId = reservation.getConcertSeat().getSeatId();
         ConcertSeat concertSeat = concertSeatRepository.getConcertSeatInfo(seatId)
-                .orElseThrow(()->new CustomException(ReservationErrorCode.NO_SEAT_FOUND));
+                .orElseThrow(() -> new CustomException(ReservationErrorCode.NO_SEAT_FOUND));;
         concertSeat.changeStatus(ConcertSeat.Status.AVAILABLE);
         concertSeatRepository.save(concertSeat);
     }

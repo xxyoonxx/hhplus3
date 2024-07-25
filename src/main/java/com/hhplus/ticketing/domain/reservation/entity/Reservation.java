@@ -32,7 +32,12 @@ public class Reservation {
     private Status status;
 
     private int totalPrice;
+/*
 
+    @Version
+    private int version;
+
+*/
     public enum Status {
         WAITING, DONE, EXPIRED
     }

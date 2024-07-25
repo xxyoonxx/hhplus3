@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,9 +35,10 @@ public class ReservationService {
      */
     @Transactional
     public Reservation reserveSeat(ReservationRequestDto requestDto) {
+
         ConcertSeat concertSeat = concertSeatRepository.getConcertSeatInfo(requestDto.getSeatId())
                 .orElseThrow(() -> new CustomException(ReservationErrorCode.NO_SEAT_FOUND));
-        if(concertSeat==null || concertSeat.getStatus()==ConcertSeat.Status.OCCUPIED) throw new CustomException(ReservationErrorCode.NO_SEAT_AVAILABLE);
+        if( concertSeat.getStatus()==ConcertSeat.Status.OCCUPIED) throw new CustomException(ReservationErrorCode.NO_SEAT_AVAILABLE);
 
         // 콘서트 정보 가져오기
         long concertId = concertDetailRepository.getConcertInfoByDetailId(requestDto.getDetailId()).getConcert().getConcertId();
@@ -66,6 +68,7 @@ public class ReservationService {
         paymentRepository.save(payment);
 
         return reservation;
+
     }
 
 }
