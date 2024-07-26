@@ -29,4 +29,9 @@ public class ConcertSeatRepositoryImpl implements ConcertSeatRepository {
         return concertSeatJpaRepository.save(concertSeat);
     }
 
+    @Override
+    public ConcertSeat findSeatByIdWithLock(Long seatId) {
+        return concertSeatJpaRepository.findSeatByIdWithLock(seatId);
+    }
+
 }
