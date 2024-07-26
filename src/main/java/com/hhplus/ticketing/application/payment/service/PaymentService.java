@@ -83,7 +83,7 @@ public class PaymentService {
      * @param requestDto
      * @return
      */
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Balance chargeBalance(long userId, BalanceRequestDto requestDto) {
         int chargeAmount = requestDto.getAmount();
         if(chargeAmount <= 0) throw new CustomException(PaymentErrorCode.INVALID_CHARGE_AMOUNT);
@@ -105,8 +105,10 @@ public class PaymentService {
      */
     @Transactional
     public Balance userInfoValidation(long userId) {
-        Balance balance = balanceRepository.getBalance(userId);
-        if(balance==null) balance = balanceRepository.save(new Balance(userId, 0, 0));
+        Balance balance = balanceRepository.getBalanceWithLock(userId);
+        if(balance==null){
+            balance = balanceRepository.save(new Balance(userId, 0));
+        }
         return balance;
     }
 

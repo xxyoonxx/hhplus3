@@ -17,6 +17,11 @@ public class BalanceRepositoryImpl implements BalanceRepository {
     }
 
     @Override
+    public Balance getBalanceWithLock(Long userId) {
+        return balanceJpaRepository.getByUserIdWithLock(userId);
+    }
+
+    @Override
     public Balance save(Balance balance) {
         return balanceJpaRepository.save(balance);
     }
