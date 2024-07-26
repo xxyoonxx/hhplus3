@@ -15,7 +15,7 @@ INSERT INTO concert_seat (detail_id, seat_no, status, seat_price) VALUES
                                                                       (1, 'A01', 'AVAILABLE', 10000),
                                                                       (2, 'B01', 'OCCUPIED', 5000);
 -- BALANCE 테이블
-INSERT INTO BALANCE VALUES(1,1,0,0);
+INSERT INTO BALANCE VALUES(1,1,0);
 /*
 -- reservation 테이블
 INSERT INTO reservation (user_id, seat_id, concert_title, reservation_date, status, total_price) VALUES
