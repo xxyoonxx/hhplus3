@@ -11,6 +11,7 @@ import com.hhplus.ticketing.domain.reservation.ReservationErrorCode;
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
 import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
 import com.hhplus.ticketing.presentation.reservation.dto.ReservationRequestDto;
+import com.hhplus.ticketing.redis.RedissonLock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -34,6 +35,7 @@ public class ReservationService {
      * @return
      */
     @Transactional(isolation = Isolation.SERIALIZABLE)
+    @RedissonLock(value = "'reserveLock:'.concat(#requestDto.getSeatId())")
     public Reservation reserveSeat(ReservationRequestDto requestDto) {
 
         ConcertSeat concertSeat = concertSeatRepository.getConcertSeatInfo(requestDto.getSeatId())
