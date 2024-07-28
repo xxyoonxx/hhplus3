@@ -59,6 +59,21 @@ Application 수준에서 제공하는 locking기법으로, 데이터베이스를
 - 한정적 시간: 좌석이 임시 배정 된 동안 잔액이 부족 할 경우 임시 배정이 만료되기 전까지 충전 후 결제를 진행해야 함
     - 낙관적 락: 충돌이 발생하더라도 자동 재시도 메커니즘이 빠르고 응답 지연이 길지 않음
 
+## 결과
+
+### 낙관적 락
+
+- 충전
+![op-payment.PNG](..%2Fhhplus3%2Fassets%2Ftest%2Fop-payment.PNG)
+- 예약
+![op-reservation.PNG](..%2Fhhplus3%2Fassets%2Ftest%2Fop-reservation.PNG)
+
+### 비관적 락
+
+- 충전
+![pessi-payment.PNG](..%2Fhhplus3%2Fassets%2Ftest%2Fpessi-payment.PNG)
+- 예약
+![pessi-reservation.PNG](..%2Fhhplus3%2Fassets%2Ftest%2Fpessi-reservation.PNG)
 
 ## step05
 <details>
