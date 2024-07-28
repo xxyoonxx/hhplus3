@@ -47,5 +47,4 @@ public class UserQueue {
     public void changeStatus(Status status) {
         this.status = status;
     }
-
 }

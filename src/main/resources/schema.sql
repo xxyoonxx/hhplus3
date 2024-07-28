@@ -7,8 +7,18 @@ CREATE TABLE users (
 
 CREATE TABLE balance (
                          balance_id BIGINT AUTO_INCREMENT  PRIMARY KEY,
-                         user_id BIGINT,
-                         balance INT
+                         USER_ID BIGINT,
+                         balance INT,
+                         version INT,
+                         UNIQUE(USER_ID)
+);
+
+CREATE TABLE balance_history (
+                                 balance_history_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                 balance_id BIGINT NOT NULL,
+                                 amount INT NOT NULL,
+                                 type VARCHAR(50) NOT NULL,
+                                 created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE concert (
@@ -37,7 +47,8 @@ CREATE TABLE reservation (
                              concert_title VARCHAR(255),
                              reservation_date TIMESTAMP,
                              status VARCHAR(50) CHECK (status IN ('WAITING', 'DONE', 'EXPIRED')),
-                             total_price INT
+                             total_price INT,
+                             version INT
 );
 
 CREATE TABLE reservation_pay (

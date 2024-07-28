@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum PaymentErrorCode implements ErrorCode {
 
+    FAIL_CHARGE_MONEY("충전을 실패하였습니다.", HttpStatus.CONFLICT),
     NOT_ENOUGH_MONEY("잔액이 부족합니다.", HttpStatus.PAYMENT_REQUIRED),
     INVALID_CHARGE_AMOUNT("0 이상의 금액만 충전 가능합니다.", HttpStatus.BAD_REQUEST);
 

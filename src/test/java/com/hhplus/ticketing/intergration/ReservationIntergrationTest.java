@@ -2,45 +2,78 @@ package com.hhplus.ticketing.intergration;
 
 import com.hhplus.ticketing.application.reservation.service.ReservationService;
 import com.hhplus.ticketing.common.exception.CustomException;
-import com.hhplus.ticketing.domain.concert.entity.Concert;
-import com.hhplus.ticketing.domain.concert.entity.ConcertDetail;
 import com.hhplus.ticketing.domain.concert.entity.ConcertSeat;
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
+import com.hhplus.ticketing.infrastructure.concert.ConcertJpaRepository;
+import com.hhplus.ticketing.infrastructure.concert.ConcertSeatJpaRepository;
 import com.hhplus.ticketing.presentation.reservation.dto.ReservationRequestDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+//@Import(TestSetupConfig.class)
 @SpringBootTest
 @Transactional
-@Import(TestSetupConfig.class)
 public class ReservationIntergrationTest {
 
     @Autowired
     private ReservationService reservationService;
 
     @Autowired
-    private ConcertSeat seat01;
+    private ConcertSeatJpaRepository concertSeatJpaRepository;
 
-    @Autowired
-    private ConcertSeat seat02;
+    @Test
+    @DisplayName("동시성 테스트 - 예약")
+    void reservationConcurrencyTest() throws InterruptedException {
 
-    @Autowired
-    private ConcertDetail concertDetail;
+        final int threadCount = 10;
+        final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
 
-    @Autowired
-    private Concert concert;
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+        AtomicInteger success = new AtomicInteger(0);
+        AtomicInteger fail = new AtomicInteger(0);
 
-    @Autowired
-    private Reservation reservation;
+        for (int i = 0; i < threadCount; i++) {
+            int finalI = i;
+            executorService.execute(() -> {
+                try {
+                    ReservationRequestDto reservationRequestDto = ReservationRequestDto.builder()
+                            .detailId(1L)
+                            .seatId(1L)
+                            .userId(finalI)
+                            .totalPrice(10000)
+                            .reservationDate(LocalDateTime.now())
+                            .build();
+                    reservationService.reserveSeat(reservationRequestDto);
+                    success.incrementAndGet();
+                } catch(Exception e) {
+                    System.err.println(e.getMessage());
+                    fail.incrementAndGet();
+                } finally {
+                    countDownLatch.countDown();
+                }
+            });
+        }
+        countDownLatch.await();
+        Thread.sleep(1000);
+
+        ConcertSeat concertSeat = concertSeatJpaRepository.findBySeatId(1L);
+        assertEquals(1, success.get());
+        assertEquals(threadCount-1, fail.get());
+        assertEquals(ConcertSeat.Status.OCCUPIED, concertSeat.getStatus());
+    }
+
 
     @Test
     @DisplayName("좌석 예약")
@@ -70,6 +103,7 @@ public class ReservationIntergrationTest {
 
         // 좌석 없음
         ReservationRequestDto nullSeat = ReservationRequestDto.builder()
+                                    .reservationId(1)
                                     .userId(1L)
                                     .detailId(1L)
                                     .seatId(0L) // 없는 좌석
@@ -80,8 +114,8 @@ public class ReservationIntergrationTest {
         CustomException ex = assertThrows(CustomException.class, ()-> reservationService.reserveSeat(nullSeat));
 
 
-        assertEquals("예약 가능한 좌석이 없습니다.", ex.getMessage());
-        assertEquals(HttpStatus.BAD_REQUEST, ex.getErrorCode());
+        assertEquals("좌석 정보를 확인해주세요.", ex.getMessage());
+        assertEquals(HttpStatus.NOT_FOUND, ex.getErrorCode());
 
         // 좌석 예약됨
         ReservationRequestDto occupiedSeat = ReservationRequestDto.builder()

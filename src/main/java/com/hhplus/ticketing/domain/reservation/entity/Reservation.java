@@ -28,16 +28,21 @@ public class Reservation {
 
     private LocalDateTime reservationDate;
 
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     private int totalPrice;
+
+    @Version
+    private int version;
 
     public enum Status {
         WAITING, DONE, EXPIRED
     }
 
     @Builder
-    public Reservation(Long reservationId, long userId, ConcertSeat concertSeat, String concertTitle, LocalDateTime reservationDate, Status status, int totalPrice) {
+    public Reservation(Long reservationId, long userId, ConcertSeat concertSeat, String concertTitle, LocalDateTime reservationDate
+            , Status status, int totalPrice, int version) {
         this.reservationId = reservationId;
         this.userId = userId;
         this.concertSeat = concertSeat;
@@ -45,6 +50,7 @@ public class Reservation {
         this.reservationDate = reservationDate;
         this.status = status;
         this.totalPrice = totalPrice;
+        this.version = version;
     }
 
     // 예약 상태값 변경

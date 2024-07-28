@@ -16,10 +16,10 @@ public class UserQueueInterceptor implements HandlerInterceptor {
     private final UserQueueProcessService userQueueProcessService;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        String token = request.getHeader("Authorization");
-        if (token == null || token.isEmpty()) throw new CustomException(UserQueueErrorCode.QUEUE_NOT_FOUND);
-        userQueueProcessService.validateToken(token);
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+//        String token = request.getHeader("Authorization");
+//        if (token == null || token.isEmpty()) throw new CustomException(UserQueueErrorCode.QUEUE_NOT_FOUND);
+//        userQueueProcessService.validateToken(token);
         return true;
     }
 

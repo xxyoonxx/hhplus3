@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -57,7 +58,7 @@ public class ReservationServiceTest {
     public void setUp() {
         concert = Concert.builder()
                 .concertId(1L)
-                .title("콘서트01")
+                .concertTitle("콘서트01")
                 .build();
         concertDetail = ConcertDetail.builder()
                 .detailId(1L)
@@ -89,7 +90,7 @@ public class ReservationServiceTest {
                 .totalPrice(10000)
                 .build();
 
-        when(concertSeatRepository.getConcertSeatInfo(1L)).thenReturn(seat01);
+        when(concertSeatRepository.getConcertSeatInfo(1L)).thenReturn(Optional.ofNullable(seat01));
         when(concertDetailRepository.getConcertInfoByDetailId(1L)).thenReturn(concertDetail);
         when(concertRepository.getConcertInfo(1L)).thenReturn(concert);
         when(reservationRepository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));

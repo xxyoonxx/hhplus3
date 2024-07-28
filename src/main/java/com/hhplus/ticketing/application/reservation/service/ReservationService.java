@@ -13,6 +13,7 @@ import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
 import com.hhplus.ticketing.presentation.reservation.dto.ReservationRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -32,18 +33,19 @@ public class ReservationService {
      * @param requestDto
      * @return
      */
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Reservation reserveSeat(ReservationRequestDto requestDto) {
-        ConcertSeat concertSeat = concertSeatRepository.getConcertSeatInfo(requestDto.getSeatId());
-        if(concertSeat==null || concertSeat.getStatus()==ConcertSeat.Status.OCCUPIED) throw new CustomException(ReservationErrorCode.NO_SEAT_AVAILABLE);
+
+        ConcertSeat concertSeat = concertSeatRepository.getConcertSeatInfo(requestDto.getSeatId())
+                .orElseThrow(() -> new CustomException(ReservationErrorCode.NO_SEAT_FOUND));
+        if( concertSeat.getStatus()==ConcertSeat.Status.OCCUPIED) throw new CustomException(ReservationErrorCode.NO_SEAT_AVAILABLE);
 
         // 콘서트 정보 가져오기
         long concertId = concertDetailRepository.getConcertInfoByDetailId(requestDto.getDetailId()).getConcert().getConcertId();
-        String concertTitle = concertRepository.getConcertInfo(concertId).getTitle();
+        String concertTitle = concertRepository.getConcertInfo(concertId).getConcertTitle();
 
         // 좌석 배정
         concertSeat.changeStatus(ConcertSeat.Status.OCCUPIED);
-        concertSeatRepository.save(concertSeat);
 
         // 예약생성
         Reservation reservation = Reservation.builder()
@@ -52,7 +54,7 @@ public class ReservationService {
                 .concertTitle(concertTitle)
                 .reservationDate(LocalDateTime.now())
                 .status(Reservation.Status.WAITING)
-                .totalPrice(requestDto.getTotalPrice())
+                .totalPrice(concertSeat.getSeatPrice())
                 .build();
         reservationRepository.save(reservation);
 
@@ -66,6 +68,7 @@ public class ReservationService {
         paymentRepository.save(payment);
 
         return reservation;
+
     }
 
 }

@@ -20,7 +20,7 @@ public class ConcertResponseDto {
         return concerts.stream()
                 .map(concert -> ConcertResponseDto.builder()
                         .concertId(concert.getConcertId())
-                        .title(concert.getTitle())
+                        .title(concert.getConcertTitle())
                         .build())
                 .collect(Collectors.toList());
     }
