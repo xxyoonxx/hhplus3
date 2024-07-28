@@ -22,6 +22,7 @@ public class BalanceHistory {
 
     private int amount;
 
+    @Enumerated(EnumType.STRING)
     private Type type;
 
     private LocalDateTime createdDate;

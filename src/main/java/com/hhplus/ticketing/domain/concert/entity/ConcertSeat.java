@@ -21,9 +21,15 @@ public class ConcertSeat {
 
     private String seatNo;
 
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     private int seatPrice;
+/*
+
+    @Version
+    private long version;
+*/
 
     public enum Status {
         OCCUPIED,
@@ -39,8 +45,7 @@ public class ConcertSeat {
         this.seatPrice = seatPrice;
     }
 
-    public ConcertSeat changeStatus(Status status) {
+    public void changeStatus(Status status) {
         this.status = status;
-        return this;
     }
 }

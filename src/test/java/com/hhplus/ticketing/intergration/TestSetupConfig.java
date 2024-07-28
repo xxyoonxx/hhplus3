@@ -42,7 +42,7 @@ public class TestSetupConfig {
     @Bean
     public ConcertSeat seat02() {
         ConcertSeat seat = ConcertSeat.builder()
-                .seatId(10L)
+                .seatId(2L)
                 .seatNo("B01")
                 .seatPrice(5000)
                 .status(ConcertSeat.Status.OCCUPIED)
@@ -65,7 +65,7 @@ public class TestSetupConfig {
     @Bean
     public Concert concert(ConcertDetail concertDetail) {
         Concert concert = Concert.builder()
-                .title("콘서트01")
+                .concertTitle("콘서트01")
                 .consertDetail(List.of(concertDetail))
                 .build();
         concertJpaRepository.save(concert);

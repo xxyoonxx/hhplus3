@@ -55,15 +55,14 @@ public class PaymentService {
         int useAmount = reservation.getTotalPrice();
 
         // 잔액 차감
-        balance = balance.useBalance(useAmount);
-        balanceRepository.save(balance);
+        balance.useBalance(useAmount);
+
+        // 대기열/예약 만료 처리
+        userQueueProcessService.expireQueue(userId, Reservation.Status.DONE);
 
         // 충전/사용내역 등록
         BalanceHistory history = new BalanceHistory(balance, useAmount, BalanceHistory.Type.USE);
         balanceHistoryRepository.save(history);
-
-        // 대기열/예약 만료 처리
-        userQueueProcessService.expireQueue(userId, Reservation.Status.DONE);
 
         return paymentRepository.findByReservationId(paymentRequestDto.getReservationId());
     }
@@ -89,12 +88,12 @@ public class PaymentService {
         int chargeAmount = requestDto.getAmount();
         if(chargeAmount <= 0) throw new CustomException(PaymentErrorCode.INVALID_CHARGE_AMOUNT);
         Balance balance = userInfoValidation(userId);
-        balance = balance.chargeBalance(chargeAmount);
+        balance.chargeBalance(chargeAmount);
 
         BalanceHistory history = new BalanceHistory(balance, chargeAmount, BalanceHistory.Type.CHARGE);
         balanceHistoryRepository.save(history);
 
-        return balanceRepository.save(balance);
+        return balance;
     }
 
     /**
@@ -104,7 +103,8 @@ public class PaymentService {
      * @param userId
      * @return
      */
-    private Balance userInfoValidation(long userId) {
+    @Transactional
+    public Balance userInfoValidation(long userId) {
         Balance balance = balanceRepository.getBalance(userId);
         if(balance==null) balance = balanceRepository.save(new Balance(userId, 0));
         return balance;

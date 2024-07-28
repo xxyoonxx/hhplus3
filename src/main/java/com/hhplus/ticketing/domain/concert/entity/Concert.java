@@ -18,15 +18,15 @@ public class Concert {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long concertId;
 
-    private String title;
+    private String concertTitle;
 
     @OneToMany(mappedBy = "concert", cascade = CascadeType.ALL)
     private List<ConcertDetail> consertDetail = new ArrayList();
 
     @Builder
-    public Concert(long concertId, String title, List<ConcertDetail> consertDetail) {
+    public Concert(long concertId, String concertTitle, List<ConcertDetail> consertDetail) {
         this.concertId = concertId;
-        this.title = title;
+        this.concertTitle = concertTitle;
         this.consertDetail = consertDetail;
     }
 

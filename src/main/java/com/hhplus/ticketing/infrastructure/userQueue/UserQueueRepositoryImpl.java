@@ -1,16 +1,12 @@
 package com.hhplus.ticketing.infrastructure.userQueue;
 
-import com.hhplus.ticketing.common.exception.CustomException;
-import com.hhplus.ticketing.domain.userQueue.UserQueueErrorCode;
 import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
 import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
-import java.awt.print.Pageable;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 

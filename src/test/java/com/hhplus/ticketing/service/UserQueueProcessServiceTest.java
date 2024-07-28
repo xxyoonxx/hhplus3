@@ -141,7 +141,7 @@ public class UserQueueProcessServiceTest {
                 .status(Reservation.Status.WAITING)
                 .build();
         when(reservationRepository.getReservationInfoByUserId(userId)).thenReturn(Optional.of(reservation));
-        when(concertSeatRepository.getConcertSeatInfo(concertSeat.getSeatId())).thenReturn(concertSeat);
+        when(concertSeatRepository.getConcertSeatInfo(concertSeat.getSeatId())).thenReturn(Optional.of(concertSeat));
 
         Payment payment = Payment.builder()
                 .reservation(reservation)

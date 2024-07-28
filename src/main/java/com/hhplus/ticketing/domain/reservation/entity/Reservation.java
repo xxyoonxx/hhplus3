@@ -28,10 +28,16 @@ public class Reservation {
 
     private LocalDateTime reservationDate;
 
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     private int totalPrice;
+/*
 
+    @Version
+    private int version;
+
+*/
     public enum Status {
         WAITING, DONE, EXPIRED
     }

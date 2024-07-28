@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -22,27 +21,19 @@ public class UserQueueService {
     private final UserQueueRepository userQueueRepository;
     private final UserQueueProcessService userQueueProcessService;
 
+    int maxProcessingCount = 10;
+
     /**
      * 대기열 진입
      * @param userId
      * @return
      */
+    @Transactional
     public UserQueueResponseDto enterUserQueue(long userId) {
         // 대기열 존재 확인 - 만료됐거나 없으면 신규 발급
         LocalDateTime currentDate = LocalDateTime.now();
-        Optional<UserQueue> optionalUserQueue  = userQueueRepository.checkQueue(userId, currentDate);
-
-        UserQueue userQueue;
-        if (optionalUserQueue.isPresent()) {
-            userQueue = optionalUserQueue.get();
-        } else {
-            userQueue = createNewQueue(userId);
-        }
-
-        int queuePosition = calculateQueuePosition(userQueue);
-        if (queuePosition == 0) userQueue.changeStatus(UserQueue.Status.PROCESSING);
-
-        return UserQueueResponseDto.from(userQueue, queuePosition);
+        UserQueue userQueue  = userQueueRepository.checkQueue(userId, currentDate).orElseGet(()->createNewQueue(userId));
+        return getQueueStatus(userQueue.getToken());
     }
 
     /**
@@ -68,6 +59,7 @@ public class UserQueueService {
      * @param authorization
      * @return
      */
+    @Transactional
     public UserQueueResponseDto getQueueStatus(String authorization) {
         UserQueue userQueue = userQueueRepository.getTokenInfo(authorization)
                 .orElseThrow(() -> new CustomException(UserQueueErrorCode.QUEUE_NOT_FOUND));
@@ -82,27 +74,19 @@ public class UserQueueService {
             throw new CustomException(UserQueueErrorCode.TOKEN_EXPIRED);
         }
 
-        // 대기순번
-        int queuePosition = calculateQueuePosition(userQueue);
-        if (queuePosition == 0) userQueue.changeStatus(UserQueue.Status.PROCESSING);
+        // 대기순번 조회
+        Long latestQueueIdOpt = userQueueRepository.getLatestQueueId().orElse(0L);
+        int queuePosition = (int)(userQueue.getQueueId() - latestQueueIdOpt);
+        if (userQueue.getQueueId().equals(latestQueueIdOpt)) queuePosition = 1;
+
+        int processedQueueCnt = userQueueRepository.countByStatus(UserQueue.Status.PROCESSING);
+        if (maxProcessingCount-processedQueueCnt > 0 && maxProcessingCount > queuePosition) userQueue.changeStatus(UserQueue.Status.PROCESSING);
+
         return UserQueueResponseDto.from(userQueue, queuePosition);
     }
 
     /**
-     * 내 앞 대기인 수 계산 및 대기열 입장 처리
-     * @param userQueue
-     * @return
-     */
-    public int calculateQueuePosition(UserQueue userQueue) {
-        // 가장 최근 PROCESSING에 진입한 QueueID 조회
-        Long latestQueueIdOpt = userQueueRepository.getLatestQueueId().orElse(0L);
-        if (userQueue.getQueueId().equals(latestQueueIdOpt)) return 0;
-        return (int)(latestQueueIdOpt - userQueue.getQueueId());
-    }
-
-    /**
-     * 만료일시 지난 대기열들 만료 처리 및 신규 대기열 진입
-     * 최대 PROCESSING 인원 10명
+     * 만료일시 지난 대기열들 만료 처리 및 신규 대기열 진입(스케쥴러)
      */
     @Transactional
     public void expireQueues() {
@@ -118,7 +102,6 @@ public class UserQueueService {
             });
         }
 
-        int maxProcessingCount = 10;
         // 현재 PROCESSING 상태인 수
         int currentProcessingCount = userQueueRepository.countByStatus(UserQueue.Status.PROCESSING);
         // 들어 갈 수 있는 자리

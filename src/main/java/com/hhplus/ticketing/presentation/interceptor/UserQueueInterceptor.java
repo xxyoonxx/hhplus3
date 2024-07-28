@@ -9,14 +9,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-@RequiredArgsConstructor
 @Component
+@RequiredArgsConstructor
 public class UserQueueInterceptor implements HandlerInterceptor {
 
     private final UserQueueProcessService userQueueProcessService;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String token = request.getHeader("Authorization");
         if (token == null || token.isEmpty()) throw new CustomException(UserQueueErrorCode.QUEUE_NOT_FOUND);
         userQueueProcessService.validateToken(token);
