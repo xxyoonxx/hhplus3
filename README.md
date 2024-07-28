@@ -64,16 +64,16 @@ Application 수준에서 제공하는 locking기법으로, 데이터베이스를
 ### 낙관적 락
 
 - 충전
-![op-payment.PNG](..%2Fhhplus3%2Fassets%2Ftest%2Fop-payment.PNG)
+![op-payment.PNG](assets%2Ftest%2Fop-payment.PNG)
 - 예약
-![op-reservation.PNG](..%2Fhhplus3%2Fassets%2Ftest%2Fop-reservation.PNG)
+![op-reservation.PNG](assets%2Ftest%2Fop-reservation.PNG)
 
 ### 비관적 락
 
 - 충전
-![pessi-payment.PNG](..%2Fhhplus3%2Fassets%2Ftest%2Fpessi-payment.PNG)
+![pessi-payment.PNG](assets%2Ftest%2Fpessi-payment.PNG)
 - 예약
-![pessi-reservation.PNG](..%2Fhhplus3%2Fassets%2Ftest%2Fpessi-reservation.PNG)
+![pessi-reservation.PNG](assets%2Ftest%2Fpessi-reservation.PNG)
 
 ## step05
 <details>
