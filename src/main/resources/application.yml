@@ -32,10 +32,15 @@ spring:
     init:
       platform: h2
       mode: always
-
-
+  cache:
+    type: redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+

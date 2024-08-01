@@ -25,3 +25,7 @@ INSERT INTO reservation (user_id, seat_id, concert_title, reservation_date, stat
 INSERT INTO reservation_pay (reservation_id, pay_date, pay_amount, status) VALUES
     (1, NOW(), 10000, 'WAITING');
 */
+INSERT INTO concert (concert_title)
+SELECT
+    CONCAT('Concert ', LPAD(x, 7, '0')) as concert_title
+FROM SYSTEM_RANGE(1, 10000);
