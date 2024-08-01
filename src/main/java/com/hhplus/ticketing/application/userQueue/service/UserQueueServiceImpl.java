@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class UserQueueService {
+public class UserQueueServiceImpl implements QueueService  {
 
     private final UserQueueRepository userQueueRepository;
     private final UserQueueProcessService userQueueProcessService;
@@ -113,4 +113,18 @@ public class UserQueueService {
             newEnterUsers.forEach(userQueue -> userQueue.changeStatus(UserQueue.Status.PROCESSING));
         }
     }
+
+    /**
+     * 대기열 검증
+     * @param authorization
+     * @return
+     */
+    public UserQueue validateToken(String authorization) {
+        UserQueue userQueue = userQueueRepository.getTokenInfo(authorization)
+                .orElseThrow(() -> new CustomException(UserQueueErrorCode.QUEUE_NOT_FOUND));
+        if (userQueue.getStatus() == UserQueue.Status.WAITING) throw new CustomException(UserQueueErrorCode.NOT_IN_QUEUE);
+        if (userQueue.getStatus() == UserQueue.Status.EXPIRED) throw new CustomException(UserQueueErrorCode.TOKEN_EXPIRED);
+        return userQueue;
+    }
+
 }
