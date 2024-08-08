@@ -12,7 +12,6 @@ import com.hhplus.ticketing.domain.payment.repository.PaymentRepository;
 import com.hhplus.ticketing.domain.reservation.ReservationErrorCode;
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
 import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
-import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
 import com.hhplus.ticketing.presentation.payment.dto.BalanceRequestDto;
 import com.hhplus.ticketing.presentation.payment.dto.PaymentRequestDto;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -36,7 +33,6 @@ public class PaymentService {
     private final BalanceHistoryRepository balanceHistoryRepository;
     private final PaymentRepository paymentRepository;
     private final ReservationRepository reservationRepository;
-    private final UserQueueRepository userQueueRepository;
 
     private final RedissonClient redissonClient;
 
@@ -131,16 +127,6 @@ public class PaymentService {
         Balance balance = balanceRepository.getBalance(userId);
         if(balance==null) balance = balanceRepository.save(new Balance(userId, 0));
         return balance;
-    }
-
-    /**
-     * 만료된 임시배정 예약 건 만료 처리
-     */
-    @Transactional
-    public void expirePayment() {
-        LocalDateTime expiredTime = LocalDateTime.now().minusMinutes(5);
-        List<Reservation> expiredReservations = reservationRepository.getExpiredReservations(expiredTime);
-        expiredReservations.stream().forEach(reservation -> userQueueProcessService.expireQueue(reservation.getUserId(), Reservation.Status.EXPIRED));
     }
 
 }

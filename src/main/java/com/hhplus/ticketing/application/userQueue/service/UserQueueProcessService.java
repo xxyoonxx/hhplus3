@@ -15,6 +15,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -88,6 +90,16 @@ public class UserQueueProcessService {
         payment.changeStatus(Payment.Status.EXPIRED);
         if (reservationStatus == Reservation.Status.DONE) payment.changeStatus(Payment.Status.DONE); // 예약 성공 > 결제 완료 처리
         paymentRepository.save(payment);
+    }
+
+    /**
+     * 만료된 임시배정 예약 건 만료 처리
+     */
+    @Transactional
+    public void expirePayment() {
+        LocalDateTime expiredTime = LocalDateTime.now().minusMinutes(5);
+        List<Reservation> expiredReservations = reservationRepository.getExpiredReservations(expiredTime);
+        expiredReservations.stream().forEach(reservation -> expireQueue(reservation.getUserId(), Reservation.Status.EXPIRED));
     }
 
 }
