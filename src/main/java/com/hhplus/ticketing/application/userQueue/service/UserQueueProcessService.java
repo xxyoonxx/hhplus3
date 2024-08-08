@@ -74,7 +74,7 @@ public class UserQueueProcessService {
     private void updateConcertSeatStatus(Reservation reservation) {
         long seatId = reservation.getConcertSeat().getSeatId();
         ConcertSeat concertSeat = concertSeatRepository.getConcertSeatInfo(seatId)
-                .orElseThrow(() -> new CustomException(ReservationErrorCode.NO_SEAT_FOUND));;
+                .orElseThrow(() -> new CustomException(ReservationErrorCode.NO_SEAT_FOUND));
         concertSeat.changeStatus(ConcertSeat.Status.AVAILABLE);
         concertSeatRepository.save(concertSeat);
     }
