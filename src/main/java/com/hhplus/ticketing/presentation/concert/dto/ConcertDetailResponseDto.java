@@ -4,12 +4,14 @@ import com.hhplus.ticketing.domain.concert.entity.ConcertDetail;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Data
 public class ConcertDetailResponseDto {

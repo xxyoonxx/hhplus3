@@ -32,18 +32,14 @@ public class Reservation {
     private Status status;
 
     private int totalPrice;
-/*
 
-    @Version
-    private int version;
-
-*/
     public enum Status {
         WAITING, DONE, EXPIRED
     }
 
     @Builder
-    public Reservation(Long reservationId, long userId, ConcertSeat concertSeat, String concertTitle, LocalDateTime reservationDate, Status status, int totalPrice) {
+    public Reservation(Long reservationId, long userId, ConcertSeat concertSeat, String concertTitle, LocalDateTime reservationDate
+            , Status status, int totalPrice) {
         this.reservationId = reservationId;
         this.userId = userId;
         this.concertSeat = concertSeat;

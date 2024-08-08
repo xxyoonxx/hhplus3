@@ -1,5 +1,6 @@
 package com.hhplus.ticketing.application.payment.service;
 
+import com.hhplus.ticketing.application.userQueue.service.UserQueueProcessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -8,11 +9,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PaymentScheduler {
 
-    private final PaymentService paymentService;
+    private final UserQueueProcessService userQueueProcessService;
 
     @Scheduled(fixedRate = 2 * 60 * 1000)
     public void checkPaymentStatus() {
-        paymentService.expirePayment();
+        userQueueProcessService.expirePayment();
     }
 
 }

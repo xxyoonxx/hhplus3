@@ -8,9 +8,16 @@ import com.hhplus.ticketing.domain.concert.entity.ConcertSeat;
 import com.hhplus.ticketing.domain.concert.repository.ConcertDetailRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertSeatRepository;
+import com.hhplus.ticketing.presentation.concert.dto.ConcertDetailResponseDto;
+import com.hhplus.ticketing.presentation.concert.dto.ConcertResponseDto;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @Service
@@ -22,15 +29,26 @@ public class ConcertService {
     private final ConcertSeatRepository concertSeatRepository;
 
     /**
+     * 콘서트 생성
+     * @param concert
+     * @return
+     */
+    @CacheEvict(value = {"concerts", "concertDetail"}, allEntries = true)
+    public Concert addConcert(Concert concert) {
+        return concertRepository.save(concert);
+    }
+
+    /**
      * 콘서트 조회
      * @return
      */
-    public List<Concert> getAllConcerts() {
-        List<Concert> concerts = concertRepository.getAllConcerts();
-        if (concerts.isEmpty() || concerts.size()==0) {
+    @Cacheable(value="concerts")
+    public Page<ConcertResponseDto> getAllConcerts(Pageable pageable) {
+        Page<ConcertResponseDto> concerts = concertRepository.getAllConcerts(pageable).map(ConcertResponseDto::from);
+        if (concerts.isEmpty() || concerts.stream().toList().size()==0) {
             throw new CustomException(ConcertErrorCode.NO_CONCERT_AVALIABLE);
         }
-        return concertRepository.getAllConcerts();
+        return concerts;
     }
 
     /**
@@ -38,12 +56,13 @@ public class ConcertService {
      * @param concertId
      * @return
      */
-    public List<ConcertDetail> getConcertDetails(long concertId) {
+    @Cacheable(value="concertDetail", key="#concertId")
+    public List<ConcertDetailResponseDto> getConcertDetails(long concertId) {
         List<ConcertDetail> concertDetails = concertDetailRepository.getConcertDetailInfo(concertId);
         if (concertDetails.isEmpty() || concertDetails.size()==0) {
             throw new CustomException(ConcertErrorCode.NO_DATE_AVALIABLE);
         }
-        return concertDetailRepository.getConcertDetailInfo(concertId);
+        return ConcertDetailResponseDto.from(concertDetails);
     }
 
     /**
@@ -56,7 +75,7 @@ public class ConcertService {
         if (concertSeats.isEmpty() || concertSeats.size()==0) {
             throw new CustomException(ConcertErrorCode.NO_SEAT_AVALIABLE);
         }
-        return concertSeatRepository.getConcertSeatsInfo(concertDeatilId);
+        return concertSeats;
     }
 
 }

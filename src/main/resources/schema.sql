@@ -7,8 +7,9 @@ CREATE TABLE users (
 
 CREATE TABLE balance (
                          balance_id BIGINT AUTO_INCREMENT  PRIMARY KEY,
-                         user_id BIGINT,
-                         balance INT
+                         USER_ID BIGINT,
+                         balance INT,
+                         UNIQUE(USER_ID)
 );
 
 CREATE TABLE balance_history (

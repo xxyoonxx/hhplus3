@@ -1,6 +1,5 @@
 package com.hhplus.ticketing.application.payment.service;
 
-import com.hhplus.ticketing.application.userQueue.service.UserQueueProcessService;
 import com.hhplus.ticketing.common.exception.CustomException;
 import com.hhplus.ticketing.domain.payment.PaymentErrorCode;
 import com.hhplus.ticketing.domain.payment.entity.Balance;
@@ -12,29 +11,31 @@ import com.hhplus.ticketing.domain.payment.repository.PaymentRepository;
 import com.hhplus.ticketing.domain.reservation.ReservationErrorCode;
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
 import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
-import com.hhplus.ticketing.domain.userQueue.UserQueueErrorCode;
-import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
-import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
+import com.hhplus.ticketing.domain.userQueue.event.UserQueueEvent;
 import com.hhplus.ticketing.presentation.payment.dto.BalanceRequestDto;
 import com.hhplus.ticketing.presentation.payment.dto.PaymentRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
 
-    private final UserQueueProcessService userQueueProcessService;
-
     private final BalanceRepository balanceRepository;
     private final BalanceHistoryRepository balanceHistoryRepository;
     private final PaymentRepository paymentRepository;
     private final ReservationRepository reservationRepository;
-    private final UserQueueRepository userQueueRepository;
+
+    private final RedissonClient redissonClient;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * 결제 처리
@@ -57,12 +58,12 @@ public class PaymentService {
         // 잔액 차감
         balance.useBalance(useAmount);
 
-        // 대기열/예약 만료 처리
-        userQueueProcessService.expireQueue(userId, Reservation.Status.DONE);
-
         // 충전/사용내역 등록
         BalanceHistory history = new BalanceHistory(balance, useAmount, BalanceHistory.Type.USE);
         balanceHistoryRepository.save(history);
+
+        // 대기열/예약 만료 이벤트 발행
+        applicationEventPublisher.publishEvent(new UserQueueEvent(this, userId, Reservation.Status.DONE));
 
         return paymentRepository.findByReservationId(paymentRequestDto.getReservationId());
     }
@@ -83,15 +84,34 @@ public class PaymentService {
      * @param requestDto
      * @return
      */
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Balance chargeBalance(long userId, BalanceRequestDto requestDto) {
-        int chargeAmount = requestDto.getAmount();
-        if(chargeAmount <= 0) throw new CustomException(PaymentErrorCode.INVALID_CHARGE_AMOUNT);
-        Balance balance = userInfoValidation(userId);
-        balance.chargeBalance(chargeAmount);
 
-        BalanceHistory history = new BalanceHistory(balance, chargeAmount, BalanceHistory.Type.CHARGE);
-        balanceHistoryRepository.save(history);
+        String lockKey = "balanceLock: " + userId;
+        RLock lock = redissonClient.getLock(lockKey);
+        boolean isLocked = false;
+
+        Balance balance;
+
+        try {
+            isLocked = lock.tryLock(5, 10, TimeUnit.SECONDS);
+            if (!isLocked) throw new RuntimeException();
+
+            int chargeAmount = requestDto.getAmount();
+            if(chargeAmount <= 0) throw new CustomException(PaymentErrorCode.INVALID_CHARGE_AMOUNT);
+
+            balance = userInfoValidation(userId);
+            balance.chargeBalance(chargeAmount);
+
+            BalanceHistory history = new BalanceHistory(balance, chargeAmount, BalanceHistory.Type.CHARGE);
+            balanceHistoryRepository.save(history);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (isLocked) {
+                lock.unlock();
+            }
+        }
 
         return balance;
     }
@@ -108,16 +128,6 @@ public class PaymentService {
         Balance balance = balanceRepository.getBalance(userId);
         if(balance==null) balance = balanceRepository.save(new Balance(userId, 0));
         return balance;
-    }
-
-    /**
-     * 만료된 임시배정 예약 건 만료 처리
-     */
-    @Transactional
-    public void expirePayment() {
-        LocalDateTime expiredTime = LocalDateTime.now().minusMinutes(5);
-        List<Reservation> expiredReservations = reservationRepository.getExpiredReservations(expiredTime);
-        expiredReservations.stream().forEach(reservation -> userQueueProcessService.expireQueue(reservation.getUserId(), Reservation.Status.EXPIRED));
     }
 
 }

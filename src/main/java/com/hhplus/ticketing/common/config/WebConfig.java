@@ -3,7 +3,6 @@ package com.hhplus.ticketing.common.config;
 import com.hhplus.ticketing.presentation.filter.LogFilter;
 import com.hhplus.ticketing.presentation.interceptor.UserQueueInterceptor;
 import jakarta.servlet.Filter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
