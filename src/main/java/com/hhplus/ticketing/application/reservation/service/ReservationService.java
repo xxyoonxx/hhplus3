@@ -5,6 +5,7 @@ import com.hhplus.ticketing.domain.concert.entity.ConcertSeat;
 import com.hhplus.ticketing.domain.concert.repository.ConcertDetailRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertSeatRepository;
+import com.hhplus.ticketing.domain.reservation.event.ReservationEvent;
 import com.hhplus.ticketing.domain.payment.entity.Payment;
 import com.hhplus.ticketing.domain.payment.repository.PaymentRepository;
 import com.hhplus.ticketing.domain.reservation.ReservationErrorCode;
@@ -13,6 +14,7 @@ import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
 import com.hhplus.ticketing.presentation.reservation.dto.ReservationRequestDto;
 import com.hhplus.ticketing.redis.RedissonLock;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,8 @@ public class ReservationService {
     private final ConcertRepository concertRepository;
     private final ConcertDetailRepository concertDetailRepository;
     private final PaymentRepository paymentRepository;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * 좌석 예약
@@ -68,6 +72,9 @@ public class ReservationService {
                 .reservation(reservation)
                 .build();
         paymentRepository.save(payment);
+
+        // 데이터 전송 플랫폼 이벤트 발행
+        applicationEventPublisher.publishEvent(new ReservationEvent(this, reservation, payment));
 
         return reservation;
 
