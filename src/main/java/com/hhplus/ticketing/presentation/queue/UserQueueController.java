@@ -1,6 +1,6 @@
 package com.hhplus.ticketing.presentation.queue;
 
-import com.hhplus.ticketing.application.userQueue.service.UserQueueService;
+import com.hhplus.ticketing.application.userQueue.service.UserQueueServiceImpl;
 import com.hhplus.ticketing.presentation.queue.dto.UserQueueRequestDto;
 import com.hhplus.ticketing.presentation.queue.dto.UserQueueResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserQueueController {
 
-    private final UserQueueService userQueueService;
+    private final UserQueueServiceImpl userQueueServiceImpl;
 
     /**
      * 대기열 진입
@@ -25,7 +25,7 @@ public class UserQueueController {
     @Operation(summary = "대기열 요청")
     @PostMapping("/")
     public ResponseEntity<UserQueueResponseDto> requestQueue(@RequestBody UserQueueRequestDto requestDto) {
-        UserQueueResponseDto enterQueue = userQueueService.enterUserQueue(requestDto.getUserId());
+        UserQueueResponseDto enterQueue = userQueueServiceImpl.enterUserQueue(requestDto.getUserId());
         return ResponseEntity.ok(enterQueue);
     }
 
@@ -37,7 +37,7 @@ public class UserQueueController {
     @Operation(summary = "대기열 조회")
     @GetMapping("/status")
     public ResponseEntity<UserQueueResponseDto> queueStatus(@RequestHeader("Authorization") String authorization) {
-        UserQueueResponseDto queueStatus = userQueueService.getQueueStatus(authorization);
+        UserQueueResponseDto queueStatus = userQueueServiceImpl.getQueueStatus(authorization);
         return ResponseEntity.ok(queueStatus);
     }
 

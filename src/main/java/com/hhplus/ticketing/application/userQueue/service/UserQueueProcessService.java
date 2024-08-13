@@ -8,7 +8,6 @@ import com.hhplus.ticketing.domain.payment.repository.PaymentRepository;
 import com.hhplus.ticketing.domain.reservation.ReservationErrorCode;
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
 import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
-import com.hhplus.ticketing.domain.userQueue.UserQueueErrorCode;
 import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
 import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
 import jakarta.transaction.Transactional;
@@ -19,26 +18,12 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class UserQueueProcessService {
+public class UserQueueProcessService{
 
     private final UserQueueRepository userQueueRepository;
     private final ReservationRepository reservationRepository;
     private final PaymentRepository paymentRepository;
     private final ConcertSeatRepository concertSeatRepository;
-
-
-    /**
-     * 대기열 검증
-     * @param authorization
-     * @return
-     */
-    public UserQueue validateToken(String authorization) {
-        UserQueue userQueue = userQueueRepository.getTokenInfo(authorization)
-                .orElseThrow(() -> new CustomException(UserQueueErrorCode.QUEUE_NOT_FOUND));
-        if (userQueue.getStatus() == UserQueue.Status.WAITING) throw new CustomException(UserQueueErrorCode.NOT_IN_QUEUE);
-        if (userQueue.getStatus() == UserQueue.Status.EXPIRED) throw new CustomException(UserQueueErrorCode.TOKEN_EXPIRED);
-        return userQueue;
-    }
 
     /**
      * 대기열 만료 처리
@@ -50,9 +35,18 @@ public class UserQueueProcessService {
         UserQueue userQueue = userQueueRepository.getUserInfo(userId);
         // 대기열 EXPIRED
         userQueue.changeStatus(UserQueue.Status.EXPIRED);
+        expireReservation(reservationStatus, userId);
+    }
 
+    /**
+     * 대기열 만료 처리 - 예약/결제 만료 처리
+     * @param reservationStatus
+     * @param userId
+     */
+    @Transactional
+    public void expireReservation(Reservation.Status reservationStatus, long userId) {
         // 예약 존재 확인
-        Optional<Reservation> optionalReservation = reservationRepository.getReservationInfoByUserId(userQueue.getUserId());
+        Optional<Reservation> optionalReservation = reservationRepository.getReservationInfoByUserId(userId);
         // 진행중인 예약 존재
         optionalReservation.ifPresent(reservation -> {
             // 예약 상태 변경
@@ -69,10 +63,10 @@ public class UserQueueProcessService {
      * 대기열 만료 처리 - 좌석 OCCUPIED > AVAILABLE
      * @param reservation
      */
-    private void updateConcertSeatStatus(Reservation reservation) {
+    public void updateConcertSeatStatus(Reservation reservation) {
         long seatId = reservation.getConcertSeat().getSeatId();
         ConcertSeat concertSeat = concertSeatRepository.getConcertSeatInfo(seatId)
-                .orElseThrow(() -> new CustomException(ReservationErrorCode.NO_SEAT_FOUND));;
+                .orElseThrow(() -> new CustomException(ReservationErrorCode.NO_SEAT_FOUND));
         concertSeat.changeStatus(ConcertSeat.Status.AVAILABLE);
         concertSeatRepository.save(concertSeat);
     }
@@ -82,7 +76,7 @@ public class UserQueueProcessService {
      * @param reservation
      * @param reservationStatus
      */
-    private void updatePaymentStatus(Reservation reservation, Reservation.Status reservationStatus) {
+    public void updatePaymentStatus(Reservation reservation, Reservation.Status reservationStatus) {
         long reservationId = reservation.getReservationId();
         Payment payment = paymentRepository.findByReservationId(reservationId);
         payment.changeStatus(Payment.Status.EXPIRED);
