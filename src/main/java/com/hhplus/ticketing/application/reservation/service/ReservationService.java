@@ -13,10 +13,10 @@ import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
 import com.hhplus.ticketing.presentation.reservation.dto.ReservationRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +33,7 @@ public class ReservationService {
      * @param requestDto
      * @return
      */
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Reservation reserveSeat(ReservationRequestDto requestDto) {
 
         ConcertSeat concertSeat = concertSeatRepository.getConcertSeatInfo(requestDto.getSeatId())

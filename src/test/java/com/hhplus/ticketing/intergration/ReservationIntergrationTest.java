@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,12 +38,13 @@ public class ReservationIntergrationTest {
         final int threadCount = 10;
         final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
 
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         AtomicInteger success = new AtomicInteger(0);
         AtomicInteger fail = new AtomicInteger(0);
 
         for (int i = 0; i < threadCount; i++) {
             int finalI = i;
-            new Thread(() -> {
+            executorService.execute(() -> {
                 try {
                     ReservationRequestDto reservationRequestDto = ReservationRequestDto.builder()
                             .detailId(1L)
@@ -51,22 +54,21 @@ public class ReservationIntergrationTest {
                             .reservationDate(LocalDateTime.now())
                             .build();
                     reservationService.reserveSeat(reservationRequestDto);
-                    System.err.println("successCount: " + success.incrementAndGet());
+                    success.incrementAndGet();
                 } catch(Exception e) {
-                    System.err.println("failCount: " + fail.incrementAndGet());
                     System.err.println(e.getMessage());
+                    fail.incrementAndGet();
                 } finally {
                     countDownLatch.countDown();
                 }
-            }).start();
+            });
         }
         countDownLatch.await();
         Thread.sleep(1000);
 
         ConcertSeat concertSeat = concertSeatJpaRepository.findBySeatId(1L);
-
-        assertEquals(ConcertSeat.Status.OCCUPIED, concertSeat.getStatus());
-
+        assertEquals(1, success.get());
+        assertEquals(threadCount-1, fail.get());
     }
 
 
