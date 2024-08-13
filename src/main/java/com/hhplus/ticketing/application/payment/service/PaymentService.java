@@ -15,14 +15,16 @@ import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
 import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
 import com.hhplus.ticketing.presentation.payment.dto.BalanceRequestDto;
 import com.hhplus.ticketing.presentation.payment.dto.PaymentRequestDto;
-import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +37,8 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final ReservationRepository reservationRepository;
     private final UserQueueRepository userQueueRepository;
+
+    private final RedissonClient redissonClient;
 
     /**
      * 결제 처리
@@ -83,15 +87,34 @@ public class PaymentService {
      * @param requestDto
      * @return
      */
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Balance chargeBalance(long userId, BalanceRequestDto requestDto) {
-        int chargeAmount = requestDto.getAmount();
-        if(chargeAmount <= 0) throw new CustomException(PaymentErrorCode.INVALID_CHARGE_AMOUNT);
-        Balance balance = userInfoValidation(userId);
-        balance.chargeBalance(chargeAmount);
 
-        BalanceHistory history = new BalanceHistory(balance, chargeAmount, BalanceHistory.Type.CHARGE);
-        balanceHistoryRepository.save(history);
+        String lockKey = "balanceLock: " + userId;
+        RLock lock = redissonClient.getLock(lockKey);
+        boolean isLocked = false;
+
+        Balance balance;
+
+        try {
+            isLocked = lock.tryLock(5, 10, TimeUnit.SECONDS);
+            if (!isLocked) throw new RuntimeException();
+
+            int chargeAmount = requestDto.getAmount();
+            if(chargeAmount <= 0) throw new CustomException(PaymentErrorCode.INVALID_CHARGE_AMOUNT);
+
+            balance = userInfoValidation(userId);
+            balance.chargeBalance(chargeAmount);
+
+            BalanceHistory history = new BalanceHistory(balance, chargeAmount, BalanceHistory.Type.CHARGE);
+            balanceHistoryRepository.save(history);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (isLocked) {
+                lock.unlock();
+            }
+        }
 
         return balance;
     }
@@ -106,7 +129,7 @@ public class PaymentService {
     @Transactional
     public Balance userInfoValidation(long userId) {
         Balance balance = balanceRepository.getBalance(userId);
-        if(balance==null) balance = balanceRepository.save(new Balance(userId, 0, 0));
+        if(balance==null) balance = balanceRepository.save(new Balance(userId, 0));
         return balance;
     }
 

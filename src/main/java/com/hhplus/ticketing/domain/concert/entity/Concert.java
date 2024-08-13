@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
 @Entity
 @Table(name="concert")
 @NoArgsConstructor
-public class Concert {
+public class Concert implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,14 +21,11 @@ public class Concert {
 
     private String concertTitle;
 
-    @OneToMany(mappedBy = "concert", cascade = CascadeType.ALL)
-    private List<ConcertDetail> consertDetail = new ArrayList();
 
     @Builder
-    public Concert(long concertId, String concertTitle, List<ConcertDetail> consertDetail) {
+    public Concert(long concertId, String concertTitle) {
         this.concertId = concertId;
         this.concertTitle = concertTitle;
-        this.consertDetail = consertDetail;
     }
 
 }

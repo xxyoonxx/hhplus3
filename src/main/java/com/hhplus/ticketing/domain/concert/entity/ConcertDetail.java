@@ -1,10 +1,13 @@
 package com.hhplus.ticketing.domain.concert.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +16,7 @@ import java.util.List;
 @Entity
 @Table(name="concert_detail")
 @NoArgsConstructor
-public class ConcertDetail {
+public class ConcertDetail implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,14 +28,10 @@ public class ConcertDetail {
 
     private LocalDateTime concertDate;
 
-    @OneToMany(mappedBy = "concertDetail", cascade = CascadeType.ALL)
-    private List<ConcertSeat> concertSeat = new ArrayList<>();
-
     @Builder
-    public ConcertDetail(long detailId, LocalDateTime concertDate, List<ConcertSeat> concertSeat, Concert concert) {
+    public ConcertDetail(long detailId, LocalDateTime concertDate, Concert concert) {
         this.detailId = detailId;
         this.concertDate = concertDate;
-        this.concertSeat = concertSeat;
         this.concert = concert;
     }
 
