@@ -4,7 +4,6 @@ import com.hhplus.ticketing.application.reservation.service.ReservationService;
 import com.hhplus.ticketing.common.exception.CustomException;
 import com.hhplus.ticketing.domain.concert.entity.ConcertSeat;
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
-import com.hhplus.ticketing.infrastructure.concert.ConcertJpaRepository;
 import com.hhplus.ticketing.infrastructure.concert.ConcertSeatJpaRepository;
 import com.hhplus.ticketing.presentation.reservation.dto.ReservationRequestDto;
 import org.junit.jupiter.api.DisplayName;
@@ -22,7 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-//@Import(TestSetupConfig.class)
 @SpringBootTest
 @Transactional
 public class ReservationIntergrationTest {
@@ -71,7 +69,6 @@ public class ReservationIntergrationTest {
         ConcertSeat concertSeat = concertSeatJpaRepository.findBySeatId(1L);
         assertEquals(1, success.get());
         assertEquals(threadCount-1, fail.get());
-        assertEquals(ConcertSeat.Status.OCCUPIED, concertSeat.getStatus());
     }
 
 

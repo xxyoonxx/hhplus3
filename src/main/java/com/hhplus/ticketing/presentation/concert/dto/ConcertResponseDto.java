@@ -4,11 +4,10 @@ import com.hhplus.ticketing.domain.concert.entity.Concert;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Data
 public class ConcertResponseDto {
@@ -16,13 +15,11 @@ public class ConcertResponseDto {
     private long concertId;
     private String title;
 
-    public static List<ConcertResponseDto> from(List<Concert> concerts){
-        return concerts.stream()
-                .map(concert -> ConcertResponseDto.builder()
-                        .concertId(concert.getConcertId())
-                        .title(concert.getConcertTitle())
-                        .build())
-                .collect(Collectors.toList());
+    public static ConcertResponseDto from(Concert concert) {
+        return ConcertResponseDto.builder()
+                .concertId(concert.getConcertId())
+                .title(concert.getConcertTitle())
+                .build();
     }
 
 }
