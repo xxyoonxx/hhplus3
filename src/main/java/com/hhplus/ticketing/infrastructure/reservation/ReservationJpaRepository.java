@@ -1,7 +1,6 @@
 package com.hhplus.ticketing.infrastructure.reservation;
 
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
-import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;

@@ -1,12 +1,10 @@
 package com.hhplus.ticketing.application.reservation.service;
 
-import com.hhplus.ticketing.application.outbox.OutboxService;
 import com.hhplus.ticketing.common.exception.CustomException;
 import com.hhplus.ticketing.domain.concert.entity.ConcertSeat;
 import com.hhplus.ticketing.domain.concert.repository.ConcertDetailRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertSeatRepository;
-import com.hhplus.ticketing.domain.outbox.entity.Outbox;
 import com.hhplus.ticketing.domain.reservation.event.ReservationEvent;
 import com.hhplus.ticketing.domain.payment.entity.Payment;
 import com.hhplus.ticketing.domain.payment.repository.PaymentRepository;
@@ -18,7 +16,6 @@ import com.hhplus.ticketing.common.redis.RedissonLock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -33,7 +30,6 @@ public class ReservationService {
     private final ConcertDetailRepository concertDetailRepository;
     private final PaymentRepository paymentRepository;
 
-    private final OutboxService outboxService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     /**

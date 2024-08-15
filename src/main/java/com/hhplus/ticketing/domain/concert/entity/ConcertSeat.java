@@ -45,7 +45,12 @@ public class ConcertSeat {
         this.seatPrice = seatPrice;
     }
 
-    public void changeStatus(Status status) {
-        this.status = status;
+    public void seatOccupied(){
+        this.status = Status.OCCUPIED;
     }
+
+    public void seatAvailable(){
+        this.status = Status.AVAILABLE;
+    }
+
 }

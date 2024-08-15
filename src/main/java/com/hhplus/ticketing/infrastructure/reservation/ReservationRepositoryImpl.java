@@ -2,7 +2,6 @@ package com.hhplus.ticketing.infrastructure.reservation;
 
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
 import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
-import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

@@ -12,26 +12,22 @@ springdoc:
 
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: jdbc:mysql://localhost:3306/testdb?useSSL=false&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: testuser
+    password: testpass
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-    defer-datasource-initialization: true
+        dialect: org.hibernate.dialect.MySQLDialect
   sql:
     init:
-      platform: h2
       mode: always
+
   cache:
     type: redis
   data:
