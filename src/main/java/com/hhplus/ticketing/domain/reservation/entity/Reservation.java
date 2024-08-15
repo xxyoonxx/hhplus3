@@ -2,6 +2,7 @@ package com.hhplus.ticketing.domain.reservation.entity;
 
 import com.hhplus.ticketing.domain.concert.entity.ConcertSeat;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,12 +11,14 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name="reservation")
 public class Reservation {
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reservationId;
 
     private long userId;
@@ -37,16 +40,15 @@ public class Reservation {
         WAITING, DONE, EXPIRED
     }
 
-    @Builder
-    public Reservation(Long reservationId, long userId, ConcertSeat concertSeat, String concertTitle, LocalDateTime reservationDate
-            , Status status, int totalPrice) {
-        this.reservationId = reservationId;
-        this.userId = userId;
-        this.concertSeat = concertSeat;
-        this.concertTitle = concertTitle;
-        this.reservationDate = reservationDate;
-        this.status = status;
-        this.totalPrice = totalPrice;
+    public static Reservation of(long userId, ConcertSeat concertSeat, String concertTitle, LocalDateTime reservationDate, Status status, int totalPrice) {
+        return new ReservationBuilder()
+                .userId(userId)
+                .concertSeat(concertSeat)
+                .concertTitle(concertTitle)
+                .reservationDate(reservationDate)
+                .status(status)
+                .totalPrice(totalPrice)
+                .build();
     }
 
     // 예약 상태값 변경

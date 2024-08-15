@@ -5,7 +5,7 @@ import com.hhplus.ticketing.domain.reservation.entity.Reservation;
 import com.hhplus.ticketing.domain.userQueue.UserQueueErrorCode;
 import com.hhplus.ticketing.domain.userQueue.entity.UserQueue;
 import com.hhplus.ticketing.domain.userQueue.repository.UserQueueRepository;
-import com.hhplus.ticketing.presentation.queue.dto.UserQueueResponseDto;
+import com.hhplus.ticketing.presentation.userQueue.dto.UserQueueResponseDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,13 +43,7 @@ public class UserQueueService {
      */
     public UserQueue createNewQueue(long userId) {
         String token = UUID.randomUUID().toString();
-        UserQueue userQueue = UserQueue.builder()
-                .userId(userId)
-                .token(token)
-                .status(UserQueue.Status.WAITING)
-                .createdDate(LocalDateTime.now())
-                .expiryDate(LocalDateTime.now().plusMinutes(30))
-                .build();
+        UserQueue userQueue = UserQueue.of(userId, token, UserQueue.Status.WAITING);
         userQueueRepository.save(userQueue);
         return userQueue;
     }

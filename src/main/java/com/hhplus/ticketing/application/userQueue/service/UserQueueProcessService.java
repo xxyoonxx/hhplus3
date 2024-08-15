@@ -75,7 +75,7 @@ public class UserQueueProcessService {
         long seatId = reservation.getConcertSeat().getSeatId();
         ConcertSeat concertSeat = concertSeatRepository.getConcertSeatInfo(seatId)
                 .orElseThrow(() -> new CustomException(ReservationErrorCode.NO_SEAT_FOUND));
-        concertSeat.changeStatus(ConcertSeat.Status.AVAILABLE);
+        concertSeat.seatAvailable();
         concertSeatRepository.save(concertSeat);
     }
 
@@ -87,8 +87,8 @@ public class UserQueueProcessService {
     private void updatePaymentStatus(Reservation reservation, Reservation.Status reservationStatus) {
         long reservationId = reservation.getReservationId();
         Payment payment = paymentRepository.findByReservationId(reservationId);
-        payment.changeStatus(Payment.Status.EXPIRED);
-        if (reservationStatus == Reservation.Status.DONE) payment.changeStatus(Payment.Status.DONE); // 예약 성공 > 결제 완료 처리
+        payment.changeStatusToExpired();
+        if (reservationStatus == Reservation.Status.DONE) payment.changeStatusToDone(); // 예약 성공 > 결제 완료 처리
         paymentRepository.save(payment);
     }
 

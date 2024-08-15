@@ -1,16 +1,15 @@
 package com.hhplus.ticketing.domain.userQueue.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name="user_queue")
 public class UserQueue {
@@ -34,14 +33,14 @@ public class UserQueue {
         WAITING, PROCESSING, EXPIRED
     }
 
-    @Builder
-    public UserQueue(long queueId, long userId, String token, Status status, LocalDateTime createdDate, LocalDateTime expiryDate) {
-        this.queueId = queueId;
-        this.userId = userId;
-        this.token = token;
-        this.status = status;
-        this.createdDate = createdDate;
-        this.expiryDate = expiryDate;
+    public static UserQueue of(long userId, String token, Status status) {
+        return new UserQueueBuilder()
+                .userId(userId)
+                .token(token)
+                .status(status)
+                .createdDate(LocalDateTime.now())
+                .expiryDate(LocalDateTime.now().plusMinutes(30))
+                .build();
     }
 
     public void changeStatus(Status status) {

@@ -1,10 +1,12 @@
 package com.hhplus.ticketing.application.reservation.service;
 
+import com.hhplus.ticketing.application.outbox.OutboxService;
 import com.hhplus.ticketing.common.exception.CustomException;
 import com.hhplus.ticketing.domain.concert.entity.ConcertSeat;
 import com.hhplus.ticketing.domain.concert.repository.ConcertDetailRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertRepository;
 import com.hhplus.ticketing.domain.concert.repository.ConcertSeatRepository;
+import com.hhplus.ticketing.domain.outbox.entity.Outbox;
 import com.hhplus.ticketing.domain.reservation.event.ReservationEvent;
 import com.hhplus.ticketing.domain.payment.entity.Payment;
 import com.hhplus.ticketing.domain.payment.repository.PaymentRepository;
@@ -12,7 +14,7 @@ import com.hhplus.ticketing.domain.reservation.ReservationErrorCode;
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
 import com.hhplus.ticketing.domain.reservation.repository.ReservationRepository;
 import com.hhplus.ticketing.presentation.reservation.dto.ReservationRequestDto;
-import com.hhplus.ticketing.redis.RedissonLock;
+import com.hhplus.ticketing.common.redis.RedissonLock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,7 @@ public class ReservationService {
     private final ConcertDetailRepository concertDetailRepository;
     private final PaymentRepository paymentRepository;
 
+    private final OutboxService outboxService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
@@ -38,7 +41,7 @@ public class ReservationService {
      * @param requestDto
      * @return
      */
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional
     @RedissonLock(value = "'reserveLock:'.concat(#requestDto.getSeatId())")
     public Reservation reserveSeat(ReservationRequestDto requestDto) {
 
@@ -51,30 +54,19 @@ public class ReservationService {
         String concertTitle = concertRepository.getConcertInfo(concertId).getConcertTitle();
 
         // 좌석 배정
-        concertSeat.changeStatus(ConcertSeat.Status.OCCUPIED);
+        concertSeat.seatOccupied();
 
         // 예약생성
-        Reservation reservation = Reservation.builder()
-                .userId(requestDto.getUserId())
-                .concertSeat(concertSeat)
-                .concertTitle(concertTitle)
-                .reservationDate(LocalDateTime.now())
-                .status(Reservation.Status.WAITING)
-                .totalPrice(concertSeat.getSeatPrice())
-                .build();
+        Reservation reservation = Reservation.of(requestDto.getUserId(), concertSeat, concertTitle, LocalDateTime.now()
+                , Reservation.Status.WAITING, concertSeat.getSeatPrice());
         reservationRepository.save(reservation);
 
         // 결제생성
-        Payment payment = Payment.builder()
-                .payAmount(requestDto.getTotalPrice())
-                .status(Payment.Status.WAITING)
-                .payDate(LocalDateTime.now())
-                .reservation(reservation)
-                .build();
+        Payment payment = Payment.of(reservation, requestDto.getTotalPrice(), Payment.Status.WAITING);
         paymentRepository.save(payment);
 
         // 데이터 전송 플랫폼 이벤트 발행
-        applicationEventPublisher.publishEvent(new ReservationEvent(this, reservation, payment));
+        applicationEventPublisher.publishEvent(new ReservationEvent(this, reservation.getReservationId()));
 
         return reservation;
 

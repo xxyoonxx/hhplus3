@@ -2,6 +2,7 @@ package com.hhplus.ticketing.domain.payment.entity;
 
 import com.hhplus.ticketing.domain.reservation.entity.Reservation;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,13 +11,15 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name="reservation_pay")
 public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long payId;
+    private Long paymentId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="reservation_id")
@@ -29,13 +32,13 @@ public class Payment {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @Builder
-    public Payment(Long payId, Reservation reservation, LocalDateTime payDate, long payAmount, Status status) {
-        this.payId = payId;
-        this.reservation = reservation;
-        this.payDate = payDate;
-        this.payAmount = payAmount;
-        this.status = status;
+    public static Payment of(Reservation reservation, long payAmount, Status status) {
+        return new PaymentBuilder()
+                .payAmount(payAmount)
+                .status(status)
+                .payDate(LocalDateTime.now())
+                .reservation(reservation)
+                .build();
     }
 
     public enum Status {
@@ -44,6 +47,16 @@ public class Payment {
 
     public Payment changeStatus(Status status) {
         this.status = status;
+        return this;
+    }
+
+    public Payment changeStatusToDone() {
+        this.status = Status.DONE;
+        return this;
+    }
+
+    public Payment changeStatusToExpired() {
+        this.status = Status.EXPIRED;
         return this;
     }
 
