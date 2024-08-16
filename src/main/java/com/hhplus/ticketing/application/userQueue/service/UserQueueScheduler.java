@@ -9,10 +9,11 @@ import org.springframework.stereotype.Component;
 public class UserQueueScheduler {
 
     private final UserQueueService userQueueService;
-
+/*
     @Scheduled(fixedRate = 2 * 60 * 1000)
     public void checkQueueStatus() {
         userQueueService.expireQueues();
     }
+*/
 
 }
