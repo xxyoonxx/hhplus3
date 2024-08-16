@@ -25,7 +25,23 @@ public class OutboxScheduler {
                 case RESERVATION -> "reservationTopic";
                 case USERQUEUE -> "userQueueTopic";
             };
-            kafkaProducer.publish(topic, outbox.getMessage());
+
+            // 재시도 3회
+            int attempt = 0;
+            boolean success = false;
+
+            while (attempt < 3 && !success) {
+                try {
+                    kafkaProducer.publish(topic, outbox.getMessage());
+                    success = true;
+                } catch (Exception e) {
+                    attempt++;
+                    if (attempt >= 3) {
+                        log.error("Outbox Scheduler failed");
+                        log.error("topic: {}", topic, e.getMessage());
+                    }
+                }
+            }
         });
     }
 
