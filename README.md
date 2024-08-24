@@ -1,3 +1,7 @@
+<a href="https://hhpluscertificateofcompletion.oopy.io/">
+  <img src="https://static.spartacodingclub.kr/hanghae99/plus/completion/badge_black.svg" />
+</a>
+
 # 콘서트 예약 서비스
 
 # 동시성 제어
